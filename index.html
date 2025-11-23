@@ -6,20 +6,65 @@
   <title>じゃんけんゲーム</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       text-align: center;
       padding: 20px;
+      background: #f0f8ff; /* 淡い青 */
     }
+
+    h1 {
+      color: #333;
+    }
+
     button {
-      font-size: 20px;
-      padding: 10px 20px;
-      margin: 10px;
-      border-radius: 10px;
+      font-size: 22px;
+      padding: 12px 25px;
+      margin: 12px;
+      border-radius: 12px;
+      border: none;
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
     }
+
+    button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
+
     #log {
-      margin-top: 20px;
+      margin-top: 25px;
       font-size: 18px;
       white-space: pre-line;
+      background: #ffffffaa;
+      padding: 15px;
+      border-radius: 10px;
+      display: inline-block;
+      min-width: 250px;
+    }
+
+    #score-bar {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+      height: 20px;
+    }
+
+    .bar {
+      height: 100%;
+      margin: 0 5px;
+      border-radius: 5px;
+    }
+
+    #player-bar {
+      background: #2196f3; /* 青 */
+      width: 0%;
+    }
+
+    #computer-bar {
+      background: #f44336; /* 赤 */
+      width: 0%;
     }
   </style>
 </head>
@@ -33,12 +78,18 @@
 
   <div id="log"></div>
 
+  <div id="score-bar">
+    <div id="player-bar" class="bar"></div>
+    <div id="computer-bar" class="bar"></div>
+  </div>
+
   <script>
     let playerScore = 0;
     let computerScore = 0;
 
     function play(player) {
       if (playerScore >= 5 || computerScore >= 5) return;
+
       const computer = Math.floor(Math.random() * 3);
 
       let message = "あなた: " + hand(player) + "\n";
@@ -64,6 +115,10 @@
       if (computerScore === 5) message += "\n💀コンピュータの勝ちです。次回頑張ってください！";
 
       document.getElementById("log").textContent = message;
+
+      // スコアバー更新
+      document.getElementById("player-bar").style.width = (playerScore / 5) * 100 + "%";
+      document.getElementById("computer-bar").style.width = (computerScore / 5) * 100 + "%";
     }
 
     function hand(n) {
