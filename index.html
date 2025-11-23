@@ -9,7 +9,7 @@
       font-family: 'Segoe UI', sans-serif;
       text-align: center;
       padding: 20px;
-      background: #f0f8ff; /* 淡い青 */
+      background: #f0f8ff;
     }
 
     h1 {
@@ -27,7 +27,6 @@
       cursor: pointer;
       transition: transform 0.1s, background-color 0.2s;
     }
-
     button:hover {
       background-color: #45a049;
       transform: scale(1.05);
@@ -58,34 +57,85 @@
     }
 
     #player-bar {
-      background: #2196f3; /* 青 */
+      background: #2196f3;
       width: 0%;
+      transition: width 0.3s;
     }
 
     #computer-bar {
-      background: #f44336; /* 赤 */
+      background: #f44336;
       width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* 画面切り替え */
+    #game, #result {
+      display: none;
+    }
+
+    #history {
+      margin-top: 25px;
+      font-size: 18px;
+      white-space: pre-line;
+      background: #ffffffdd;
+      padding: 15px;
+      border-radius: 10px;
+      display: inline-block;
+      min-width: 300px;
     }
   </style>
 </head>
+
 <body>
-  <h1>5点先取 じゃんけんゲーム</h1>
-  <p>あなたの手を選んでください</p>
 
-  <button onclick="play(0)">グー</button>
-  <button onclick="play(1)">チョキ</button>
-  <button onclick="play(2)">パー</button>
-
-  <div id="log"></div>
-
-  <div id="score-bar">
-    <div id="player-bar" class="bar"></div>
-    <div id="computer-bar" class="bar"></div>
+  <!-- ▼ スタート画面 ▼ -->
+  <div id="start">
+    <h1>5点先取 じゃんけんゲーム</h1>
+    <button onclick="startGame()">ゲームスタート</button>
   </div>
+
+  <!-- ▼ ゲーム画面 ▼ -->
+  <div id="game">
+    <h2>手を選んでください</h2>
+
+    <button onclick="play(0)">グー</button>
+    <button onclick="play(1)">チョキ</button>
+    <button onclick="play(2)">パー</button>
+
+    <div id="log"></div>
+
+    <div id="score-bar">
+      <div id="player-bar" class="bar"></div>
+      <div id="computer-bar" class="bar"></div>
+    </div>
+
+    <button onclick="resetGame()" style="margin-top:20px; background:#777;">リセット</button>
+  </div>
+
+  <!-- ▼ 結果画面 ▼ -->
+  <div id="result">
+    <h2 id="resultMessage"></h2>
+    <button onclick="backToStart()">タイトルに戻る</button>
+  </div>
+
+  <!-- ▼ スコア履歴 ▼ -->
+  <h2 style="margin-top:40px;">スコア履歴</h2>
+  <div id="history">まだ対戦履歴はありません</div>
 
   <script>
     let playerScore = 0;
     let computerScore = 0;
+    let history = [];
+
+    function startGame() {
+      document.getElementById("start").style.display = "none";
+      document.getElementById("game").style.display = "block";
+
+      playerScore = 0;
+      computerScore = 0;
+      document.getElementById("log").textContent = "";
+      updateBars();
+    }
 
     function play(player) {
       if (playerScore >= 5 || computerScore >= 5) return;
@@ -111,19 +161,57 @@
 
       message += `スコア → あなた: ${playerScore}  コンピュータ: ${computerScore}\n`;
 
-      if (playerScore === 5) message += "\n🎉おめでとうございます！あなたの勝ちです！";
-      if (computerScore === 5) message += "\n💀コンピュータの勝ちです。次回頑張ってください！";
+      if (playerScore === 5) {
+        message += "\n🎉おめでとうございます！あなたの勝ちです！";
+        endGame("🎉あなたの勝ち！");
+      }
+      if (computerScore === 5) {
+        message += "\n💀コンピュータの勝ちです。次回頑張ってください！";
+        endGame("💀コンピュータの勝ち");
+      }
 
       document.getElementById("log").textContent = message;
+      updateBars();
+    }
 
-      // スコアバー更新
+    function updateBars() {
       document.getElementById("player-bar").style.width = (playerScore / 5) * 100 + "%";
       document.getElementById("computer-bar").style.width = (computerScore / 5) * 100 + "%";
+    }
+
+    function endGame(resultText) {
+      history.push(`あなた ${playerScore} - ${computerScore} コンピュータ`);
+      updateHistory();
+
+      document.getElementById("game").style.display = "none";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("resultMessage").textContent = resultText;
+    }
+
+    function resetGame() {
+      playerScore = 0;
+      computerScore = 0;
+      document.getElementById("log").textContent = "";
+      updateBars();
+    }
+
+    function backToStart() {
+      document.getElementById("result").style.display = "none";
+      document.getElementById("start").style.display = "block";
+    }
+
+    function updateHistory() {
+      let text = "";
+      for (let i = 0; i < history.length; i++) {
+        text += `${i + 1}回目： ${history[i]}\n`;
+      }
+      document.getElementById("history").textContent = text;
     }
 
     function hand(n) {
       return ["グー", "チョキ", "パー"][n];
     }
   </script>
+
 </body>
 </html>
