@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>じゃんけんゲーム</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 10px;
+    }
+    #log {
+      margin-top: 20px;
+      font-size: 18px;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <h1>5点先取 じゃんけんゲーム</h1>
+  <p>あなたの手を選んでください</p>
+
+  <button onclick="play(0)">グー</button>
+  <button onclick="play(1)">チョキ</button>
+  <button onclick="play(2)">パー</button>
+
+  <div id="log"></div>
+
+  <script>
+    let playerScore = 0;
+    let computerScore = 0;
+
+    function play(player) {
+      if (playerScore >= 5 || computerScore >= 5) return;
+      const computer = Math.floor(Math.random() * 3);
+
+      let message = "あなた: " + hand(player) + "\n";
+      message += "コンピュータ: " + hand(computer) + "\n";
+
+      if (player === computer) {
+        message += "あいこです。\n";
+      } else if (
+        (player === 0 && computer === 1) ||
+        (player === 1 && computer === 2) ||
+        (player === 2 && computer === 0)
+      ) {
+        playerScore++;
+        message += "あなたの勝ち！\n";
+      } else {
+        computerScore++;
+        message += "コンピュータの勝ち！\n";
+      }
+
+      message += `スコア → あなた: ${playerScore}  コンピュータ: ${computerScore}\n`;
+
+      if (playerScore === 5) message += "\n🎉おめでとうございます！あなたの勝ちです！";
+      if (computerScore === 5) message += "\n💀コンピュータの勝ちです。次回頑張ってください！";
+
+      document.getElementById("log").textContent = message;
+    }
+
+    function hand(n) {
+      return ["グー", "チョキ", "パー"][n];
+    }
+  </script>
+</body>
+</html>
