@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>お金クリッカー 〜億万長者への道〜</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', 'Hiragino Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1a2a6c, #2a5298 60%, #b21f1f);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      padding: 18px 10px 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 10px 14px 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(6px);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    /* ▼ 左：クリックエリア ▼ */
+    .clicker {
+      flex: 1 1 300px;
+      text-align: center;
+      min-width: 280px;
+    }
+
+    .money-display {
+      font-size: 34px;
+      font-weight: bold;
+      color: #ffe066;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      margin: 6px 0;
+      word-break: break-all;
+    }
+
+    .rate {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 16px;
+    }
+
+    .coin {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #fff3b0, #ffd700 55%, #e0a800);
+      border: 6px solid #c89000;
+      font-size: 70px;
+      line-height: 168px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.35);
+      transition: transform 0.05s;
+      margin: 10px auto;
+    }
+    .coin:active { transform: scale(0.92); }
+
+    .click-hint {
+      font-size: 14px;
+      opacity: 0.85;
+      margin-top: 8px;
+    }
+
+    /* ▼ 右：ショップ ▼ */
+    .shop {
+      flex: 1 1 380px;
+      min-width: 300px;
+    }
+
+    .shop h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.18);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s, transform 0.05s;
+    }
+    .item:hover { background: rgba(0,0,0,0.30); }
+    .item:active { transform: scale(0.99); }
+    .item.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .item .icon { font-size: 32px; width: 40px; text-align: center; }
+    .item .info { flex: 1; text-align: left; }
+    .item .name { font-weight: bold; font-size: 16px; }
+    .item .desc { font-size: 12px; opacity: 0.85; }
+    .item .right { text-align: right; }
+    .item .cost { font-weight: bold; color: #ffe066; font-size: 15px; }
+    .item .count { font-size: 13px; opacity: 0.9; }
+
+    /* ▼ 下：統計&ボタン ▼ */
+    .footer {
+      width: 100%;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .stats {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      font-size: 14px;
+      padding: 8px 16px;
+      margin: 4px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.32); }
+    .btn.danger { background: rgba(244,67,54,0.6); }
+    .btn.danger:hover { background: rgba(244,67,54,0.85); }
+
+    .nav-link {
+      color: #ffe066;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    /* ▼ クリック時の浮かぶ数字 ▼ */
+    .float {
+      position: fixed;
+      pointer-events: none;
+      font-weight: bold;
+      color: #ffe066;
+      font-size: 20px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      animation: floatUp 0.8s ease-out forwards;
+      z-index: 100;
+    }
+    @keyframes floatUp {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-60px); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>💰 お金クリッカー</h1>
+    <div class="subtitle">〜 クリックして億万長者を目指せ！ 〜</div>
+  </header>
+
+  <div class="container">
+    <!-- ▼ クリックエリア ▼ -->
+    <div class="panel clicker">
+      <div class="money-display" id="money">¥0</div>
+      <div class="rate" id="rate">自動収入: ¥0 / 秒</div>
+      <div class="coin" id="coin">🪙</div>
+      <div class="click-hint" id="clickHint">1クリック = ¥1</div>
+    </div>
+
+    <!-- ▼ ショップ ▼ -->
+    <div class="panel shop">
+      <h2>🏪 ショップ</h2>
+      <div id="shop"></div>
+    </div>
+
+    <!-- ▼ フッター ▼ -->
+    <div class="footer">
+      <div class="panel" style="display:inline-block;">
+        <div class="stats" id="stats"></div>
+        <button class="btn" onclick="saveGame(true)">💾 セーブ</button>
+        <button class="btn danger" onclick="resetGame()">🔄 リセット</button>
+        <br>
+        <a class="nav-link" href="index.html">→ じゃんけんゲームへ</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ▼ ゲームデータ ▼
+    const SAVE_KEY = "moneyClickerSave_v1";
+
+    // 自動収入の施設（買うほど値段が上がる）
+    const ITEMS = [
+      { id: "click",   icon: "👆", name: "クリック強化",   desc: "1クリックの稼ぎ +1",   baseCost: 15,    rate: 0,    click: 1 },
+      { id: "stand",   icon: "🥤", name: "ジュース屋台",   desc: "自動 ¥1 / 秒",         baseCost: 50,    rate: 1,    click: 0 },
+      { id: "shop",    icon: "🏪", name: "コンビニ",       desc: "自動 ¥8 / 秒",         baseCost: 500,   rate: 8,    click: 0 },
+      { id: "factory", icon: "🏭", name: "工場",           desc: "自動 ¥50 / 秒",        baseCost: 3000,  rate: 50,   click: 0 },
+      { id: "bank",    icon: "🏦", name: "銀行",           desc: "自動 ¥300 / 秒",       baseCost: 20000, rate: 300,  click: 0 },
+      { id: "rocket",  icon: "🚀", name: "宇宙開発企業",   desc: "自動 ¥2000 / 秒",      baseCost: 150000,rate: 2000, click: 0 },
+    ];
+
+    let state = {
+      money: 0,
+      totalEarned: 0,
+      totalClicks: 0,
+      clickPower: 1,
+      counts: {}, // id -> 所持数
+    };
+
+    ITEMS.forEach(it => state.counts[it.id] = 0);
+
+    // ▼ 表示用フォーマット ▼
+    function fmt(n) {
+      n = Math.floor(n);
+      if (n < 10000) return n.toLocaleString();
+      if (n < 1e8) return (n / 1e4).toFixed(2).replace(/\.?0+$/, "") + "万";
+      if (n < 1e12) return (n / 1e8).toFixed(2).replace(/\.?0+$/, "") + "億";
+      return (n / 1e12).toFixed(2).replace(/\.?0+$/, "") + "兆";
+    }
+
+    // 施設の現在価格（1.15倍ずつ上昇）
+    function costOf(item) {
+      return Math.floor(item.baseCost * Math.pow(1.15, state.counts[item.id]));
+    }
+
+    // 1秒あたりの自動収入
+    function incomePerSec() {
+      let sum = 0;
+      ITEMS.forEach(it => sum += it.rate * state.counts[it.id]);
+      return sum;
+    }
+
+    // ▼ クリック処理 ▼
+    function clickCoin(e) {
+      state.money += state.clickPower;
+      state.totalEarned += state.clickPower;
+      state.totalClicks++;
+      showFloat(e, "+¥" + fmt(state.clickPower));
+      render();
+    }
+
+    function showFloat(e, text) {
+      const el = document.createElement("div");
+      el.className = "float";
+      el.textContent = text;
+      let x, y;
+      if (e && e.clientX) { x = e.clientX; y = e.clientY; }
+      else {
+        const r = document.getElementById("coin").getBoundingClientRect();
+        x = r.left + r.width / 2; y = r.top + r.height / 2;
+      }
+      el.style.left = (x - 20) + "px";
+      el.style.top = (y - 20) + "px";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 800);
+    }
+
+    // ▼ 購入処理 ▼
+    function buy(item) {
+      const cost = costOf(item);
+      if (state.money < cost) {
+        toast("お金が足りません！");
+        return;
+      }
+      state.money -= cost;
+      state.counts[item.id]++;
+      if (item.click) state.clickPower += item.click;
+      render();
+    }
+
+    // ▼ 描画 ▼
+    function render() {
+      document.getElementById("money").textContent = "¥" + fmt(state.money);
+      document.getElementById("rate").textContent = "自動収入: ¥" + fmt(incomePerSec()) + " / 秒";
+      document.getElementById("clickHint").textContent = "1クリック = ¥" + fmt(state.clickPower);
+
+      const shop = document.getElementById("shop");
+      shop.innerHTML = "";
+      ITEMS.forEach(it => {
+        const cost = costOf(it);
+        const affordable = state.money >= cost;
+        const div = document.createElement("div");
+        div.className = "item" + (affordable ? "" : " locked");
+        div.innerHTML = `
+          <div class="icon">${it.icon}</div>
+          <div class="info">
+            <div class="name">${it.name}</div>
+            <div class="desc">${it.desc}</div>
+          </div>
+          <div class="right">
+            <div class="cost">¥${fmt(cost)}</div>
+            <div class="count">所持: ${state.counts[it.id]}</div>
+          </div>`;
+        div.onclick = () => buy(it);
+        shop.appendChild(div);
+      });
+
+      document.getElementById("stats").textContent =
+        `総獲得額: ¥${fmt(state.totalEarned)} ／ 総クリック数: ${state.totalClicks.toLocaleString()}`;
+    }
+
+    // ▼ ゲームループ（自動収入＆定期セーブ） ▼
+    let lastTick = Date.now();
+    function tick() {
+      const now = Date.now();
+      const dt = (now - lastTick) / 1000;
+      lastTick = now;
+      const gain = incomePerSec() * dt;
+      if (gain > 0) {
+        state.money += gain;
+        state.totalEarned += gain;
+      }
+      render();
+    }
+
+    // ▼ セーブ＆ロード ▼
+    function saveGame(showMsg) {
+      state.lastSave = Date.now();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      if (showMsg) toast("セーブしました 💾");
+    }
+
+    function loadGame() {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      try {
+        const loaded = JSON.parse(raw);
+        state = Object.assign(state, loaded);
+        ITEMS.forEach(it => { if (state.counts[it.id] == null) state.counts[it.id] = 0; });
+
+        // 放置中（オフライン）の収入を計算
+        if (loaded.lastSave) {
+          const offlineSec = Math.min((Date.now() - loaded.lastSave) / 1000, 60 * 60 * 8); // 最大8時間
+          const offlineGain = incomePerSec() * offlineSec;
+          if (offlineGain > 1) {
+            state.money += offlineGain;
+            state.totalEarned += offlineGain;
+            setTimeout(() => toast(`おかえり！放置中に ¥${fmt(offlineGain)} 稼ぎました 🎉`), 400);
+          }
+        }
+      } catch (e) {
+        console.error("セーブデータ読み込み失敗", e);
+      }
+    }
+
+    function resetGame() {
+      if (!confirm("本当に最初からやり直しますか？（セーブデータが消えます）")) return;
+      localStorage.removeItem(SAVE_KEY);
+      state = { money: 0, totalEarned: 0, totalClicks: 0, clickPower: 1, counts: {} };
+      ITEMS.forEach(it => state.counts[it.id] = 0);
+      render();
+      toast("リセットしました");
+    }
+
+    // ▼ トースト通知 ▼
+    let toastTimer;
+    function toast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    // ▼ 初期化 ▼
+    document.getElementById("coin").addEventListener("click", clickCoin);
+    loadGame();
+    lastTick = Date.now();
+    render();
+    setInterval(tick, 100);          // 自動収入
+    setInterval(() => saveGame(false), 10000); // 10秒ごとに自動セーブ
+    window.addEventListener("beforeunload", () => saveGame(false));
+  </script>
+</body>
+</html>
