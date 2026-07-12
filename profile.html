@@ -67,19 +67,16 @@
       <h2 class="font-black text-3xl sm:text-4xl mb-12 tracking-tight-bold">実績紹介</h2>
 
       <div class="grid sm:grid-cols-2 gap-8">
-        <!-- Work item 1 -->
+        <!-- Work item 1 (TikTok embed) -->
         <div class="group">
-          <div class="aspect-video bg-white/5 border border-white/10 rounded-lg overflow-hidden">
-            <!--
-              動画を埋め込む場合は下記 iframe の src を差し替えてください。
-              例: YouTube の場合 https://www.youtube.com/embed/VIDEO_ID
-            -->
-            <iframe
-              class="w-full h-full"
-              src=""
-              title="作品タイトル1"
-              loading="lazy"
-              allowfullscreen></iframe>
+          <div class="bg-white/5 border border-white/10 rounded-lg overflow-hidden flex justify-center py-4">
+            <blockquote
+              class="tiktok-embed"
+              cite="https://www.tiktok.com/@user4817329081440/video/7638530415946370322"
+              data-video-id="7638530415946370322"
+              style="max-width: 325px; min-width: 260px;">
+              <section></section>
+            </blockquote>
           </div>
           <p class="mt-4 font-bold">作品タイトル 01</p>
           <p class="text-sm text-gray-500">制作内容の説明をここに入力</p>
@@ -150,5 +147,6 @@
     &copy; ツツミーズ
   </footer>
 
+  <script async src="https://www.tiktok.com/embed.js"></script>
 </body>
 </html>
