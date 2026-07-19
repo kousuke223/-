@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kousuke223.github.io/-/sitemap.xml
