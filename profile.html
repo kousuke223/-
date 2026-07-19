@@ -39,6 +39,15 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    .reveal.mission-fade {
+      transform: translateY(16px);
+      filter: blur(12px);
+      transition: opacity 1.6s ease, transform 1.6s ease, filter 1.6s ease;
+    }
+    .reveal.mission-fade.is-visible {
+      filter: blur(0);
+    }
   }
 </style>
 </head>
@@ -76,7 +85,7 @@
 
   <!-- Mission -->
   <section id="mission" class="px-6 py-32 border-t border-gray-200 flex items-center justify-center text-center min-h-[70vh]">
-    <div class="reveal max-w-4xl mx-auto">
+    <div class="reveal mission-fade max-w-4xl mx-auto">
       <p class="text-gray-500 tracking-[0.3em] text-xs sm:text-sm mb-8">MISSION</p>
       <h2 class="font-black text-4xl sm:text-6xl md:text-7xl leading-tight tracking-tight-bold">
         伝えよう。<br />
@@ -105,7 +114,7 @@
       <p class="text-gray-500 tracking-[0.3em] text-xs mb-4">WORKS</p>
       <h2 class="font-black text-3xl sm:text-4xl mb-12 tracking-tight-bold">実績紹介</h2>
 
-      <div class="grid sm:grid-cols-2 gap-8">
+      <div class="max-w-sm mx-auto sm:mx-0">
         <!-- Work item 1 (TikTok embed) -->
         <div class="group">
           <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden flex justify-center py-4">
@@ -117,49 +126,7 @@
               <section></section>
             </blockquote>
           </div>
-          <p class="mt-4 font-bold">作品タイトル 01</p>
-          <p class="text-sm text-gray-500">制作内容の説明をここに入力</p>
-        </div>
-
-        <!-- Work item 2 -->
-        <div class="group">
-          <div class="aspect-video bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
-            <iframe
-              class="w-full h-full"
-              src=""
-              title="作品タイトル2"
-              loading="lazy"
-              allowfullscreen></iframe>
-          </div>
-          <p class="mt-4 font-bold">作品タイトル 02</p>
-          <p class="text-sm text-gray-500">制作内容の説明をここに入力</p>
-        </div>
-
-        <!-- Work item 3 -->
-        <div class="group">
-          <div class="aspect-video bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
-            <iframe
-              class="w-full h-full"
-              src=""
-              title="作品タイトル3"
-              loading="lazy"
-              allowfullscreen></iframe>
-          </div>
-          <p class="mt-4 font-bold">作品タイトル 03</p>
-          <p class="text-sm text-gray-500">制作内容の説明をここに入力</p>
-        </div>
-
-        <!-- Work item 4 -->
-        <div class="group">
-          <div class="aspect-video bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
-            <iframe
-              class="w-full h-full"
-              src=""
-              title="作品タイトル4"
-              loading="lazy"
-              allowfullscreen></iframe>
-          </div>
-          <p class="mt-4 font-bold">作品タイトル 04</p>
+          <p class="mt-4 font-bold">田中精肉店</p>
           <p class="text-sm text-gray-500">制作内容の説明をここに入力</p>
         </div>
       </div>
