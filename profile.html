@@ -97,9 +97,64 @@
       will-change: transform;
     }
   }
+
+  /* 隠しグリッチモード */
+  @keyframes glitch-anim {
+    0% { transform: translate(0); filter: hue-rotate(0deg); }
+    10% { transform: translate(-4px, 2px); filter: hue-rotate(30deg); }
+    20% { transform: translate(4px, -2px); filter: hue-rotate(-20deg); }
+    30% { transform: translate(-2px, 3px); }
+    40% { transform: translate(3px, -3px); filter: hue-rotate(15deg); }
+    50% { transform: translate(-3px, 1px); }
+    60% { transform: translate(2px, -1px); filter: hue-rotate(-15deg); }
+    70% { transform: translate(-1px, 2px); }
+    80% { transform: translate(1px, -2px); }
+    90% { transform: translate(-2px, 0); }
+    100% { transform: translate(0); filter: hue-rotate(0deg); }
+  }
+  body.glitch-active {
+    animation: glitch-anim 0.15s steps(2) infinite;
+  }
+  body.glitch-active::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(34, 211, 238, 0.08) 0px,
+      rgba(34, 211, 238, 0.08) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  /* 書き出し風ローディング */
+  #render-loader {
+    transition: opacity 0.4s ease;
+  }
+  #render-loader.done {
+    opacity: 0;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body class="bg-white text-gray-900">
+
+  <!-- 書き出し風ローディング -->
+  <div id="render-loader" class="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center gap-4 font-mono text-cyan-300">
+    <div class="text-xs sm:text-sm tracking-[0.3em]">レンダリング中...</div>
+    <div id="render-percent" class="text-4xl sm:text-5xl font-bold">0%</div>
+  </div>
+
+  <!-- スクロール連動タイムコード -->
+  <div id="timecode"
+       class="fixed bottom-4 left-4 z-40 font-mono text-xs sm:text-sm text-cyan-300 bg-black/85 px-3 py-1.5 rounded border border-cyan-400/30 tracking-widest pointer-events-none select-none"
+       style="text-shadow: 0 0 6px rgba(34,211,238,0.6);">
+    00:00:00:00
+  </div>
 
   <!-- Header -->
   <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur border-b border-gray-200">
@@ -362,6 +417,80 @@
           count = 0;
         }
       });
+    })();
+
+    // スクロール連動タイムコード(00:00:00:00形式、24fps換算)
+    (function () {
+      var el = document.getElementById('timecode');
+      if (!el) return;
+      var fps = 24;
+      function pad(n) { return String(n).padStart(2, '0'); }
+      function update() {
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var progress = docHeight > 0 ? window.scrollY / docHeight : 0;
+        var totalFrames = Math.floor(progress * fps * 180); // 想定尺3分
+        var totalSeconds = Math.floor(totalFrames / fps);
+        var frames = totalFrames % fps;
+        var hh = Math.floor(totalSeconds / 3600);
+        var mm = Math.floor((totalSeconds % 3600) / 60);
+        var ss = totalSeconds % 60;
+        el.textContent = pad(hh) + ':' + pad(mm) + ':' + pad(ss) + ':' + pad(frames);
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+
+    // 隠しグリッチモード: コナミコマンド(↑↑↓↓←→←→BA)
+    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+      (function () {
+        var sequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        var pos = 0;
+        document.addEventListener('keydown', function (e) {
+          var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+          if (key === sequence[pos]) {
+            pos++;
+            if (pos === sequence.length) {
+              pos = 0;
+              document.body.classList.add('glitch-active');
+              setTimeout(function () {
+                document.body.classList.remove('glitch-active');
+              }, 1200);
+            }
+          } else {
+            pos = key === sequence[0] ? 1 : 0;
+          }
+        });
+      })();
+    }
+
+    // 書き出し風ローディング(セッション中1回のみ)
+    (function () {
+      var loader = document.getElementById('render-loader');
+      if (!loader) return;
+      if (
+        sessionStorage.getItem('renderLoaderShown') ||
+        !window.matchMedia('(prefers-reduced-motion: no-preference)').matches
+      ) {
+        loader.remove();
+        return;
+      }
+      sessionStorage.setItem('renderLoaderShown', '1');
+      var percentEl = document.getElementById('render-percent');
+      var pct = 0;
+      var timer = setInterval(function () {
+        pct += Math.floor(Math.random() * 18) + 6;
+        if (pct >= 100) {
+          pct = 100;
+          percentEl.textContent = pct + '%';
+          clearInterval(timer);
+          setTimeout(function () {
+            loader.classList.add('done');
+            setTimeout(function () { loader.remove(); }, 500);
+          }, 200);
+          return;
+        }
+        percentEl.textContent = pct + '%';
+      }, 90);
     })();
   </script>
   <script>
