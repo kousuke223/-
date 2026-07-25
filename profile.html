@@ -55,6 +55,7 @@
     .hero-anim-4 { animation-delay: 0.4s; }
     .hero-anim-5 { animation-delay: 0.48s; }
     .hero-anim-6 { animation-delay: 0.58s; }
+    .hero-anim-7 { animation-delay: 0.68s; }
 
     .reveal {
       opacity: 0;
@@ -93,19 +94,31 @@
   </header>
 
   <!-- Hero -->
-  <section class="relative min-h-screen flex items-center px-6 pt-24">
-    <div class="max-w-5xl mx-auto w-full">
-      <p class="hero-anim hero-anim-1 text-gray-500 tracking-[0.3em] text-xs sm:text-sm mb-6">CREATOR</p>
-      <h1 class="hero-anim hero-anim-2 font-black text-6xl sm:text-8xl tracking-tight-bold leading-none mb-8">
-        ツツミーズ
-      </h1>
-      <div class="hero-anim hero-anim-3 w-16 h-px bg-gray-300 mb-8"></div>
-      <p class="hero-anim hero-anim-4 text-xl sm:text-2xl font-bold mb-1">堤 康亮</p>
-      <p class="hero-anim hero-anim-5 text-gray-500 mb-10">クリエーター</p>
-      <a href="#works"
-         class="hero-anim hero-anim-6 inline-block border border-gray-300 rounded-full px-8 py-3 text-sm tracking-wide hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors">
-        作品を見る
-      </a>
+  <section class="relative min-h-screen flex items-center px-6 pt-24 pb-16">
+    <div class="max-w-6xl mx-auto w-full grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+      <div>
+        <p class="hero-anim hero-anim-1 text-gray-500 tracking-[0.3em] text-xs sm:text-sm mb-6">CREATOR</p>
+        <h1 class="hero-anim hero-anim-2 font-black text-6xl sm:text-7xl tracking-tight-bold leading-none mb-8">
+          ツツミーズ
+        </h1>
+        <div class="hero-anim hero-anim-3 w-16 h-px bg-gray-300 mb-8"></div>
+        <p class="hero-anim hero-anim-4 text-xl sm:text-2xl font-bold mb-1">堤 康亮</p>
+        <p class="hero-anim hero-anim-5 text-gray-500 mb-10">クリエーター</p>
+        <a href="#works"
+           class="hero-anim hero-anim-6 inline-block border border-gray-300 rounded-full px-8 py-3 text-sm tracking-wide hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors">
+          作品を見る
+        </a>
+        <p class="hero-anim hero-anim-7 mt-10 text-sm text-gray-400 italic">映像と技術、そしてストーリーの融合。</p>
+      </div>
+
+      <!-- 作品コラージュ(プレースホルダー。実際の写真・サムネイルに差し替え可能) -->
+      <div class="hero-anim hero-anim-3 grid grid-cols-3 grid-rows-3 gap-4 aspect-square">
+        <div class="col-span-2 row-span-2 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-950 shadow-xl"></div>
+        <div class="col-span-1 row-span-1 rounded-2xl bg-gradient-to-br from-rose-100 to-orange-100 shadow-lg rotate-2"></div>
+        <div class="col-span-1 row-span-2 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-300 shadow-lg"></div>
+        <div class="col-span-1 row-span-1 rounded-2xl bg-gradient-to-br from-sky-100 to-indigo-100 shadow-lg -rotate-2"></div>
+        <div class="col-span-1 row-span-1 rounded-2xl bg-gray-900 shadow-lg"></div>
+      </div>
     </div>
   </section>
 
