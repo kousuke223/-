@@ -79,6 +79,21 @@
     .reveal.mission-fade.is-visible {
       filter: blur(0);
     }
+
+    .marquee-track {
+      width: max-content;
+      animation: marquee 22s linear infinite;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .tilt {
+      transition: transform 0.15s ease-out;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
   }
 </style>
 </head>
@@ -98,8 +113,13 @@
   </header>
 
   <!-- Hero -->
-  <section class="relative md:min-h-screen flex items-center px-6 pt-28 pb-16">
-    <div class="max-w-6xl mx-auto w-full grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+  <section class="relative md:min-h-screen flex items-center px-6 pt-28 pb-16 overflow-hidden">
+    <p aria-hidden="true"
+       class="pointer-events-none select-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center whitespace-nowrap font-black leading-none tracking-tight-bold opacity-[0.12] bg-gradient-to-r from-rose-400 via-orange-300 to-indigo-400 bg-clip-text text-transparent"
+       style="font-size: 22vw;">
+      ツツミーズ
+    </p>
+    <div class="relative z-10 max-w-6xl mx-auto w-full grid md:grid-cols-2 gap-12 md:gap-16 items-center">
       <div>
         <p class="hero-anim hero-anim-1 text-gray-500 tracking-[0.3em] text-xs sm:text-sm mb-6">CREATOR</p>
         <h1 class="hero-anim hero-anim-2 font-black text-6xl sm:text-7xl tracking-tight-bold leading-none mb-8">
@@ -117,19 +137,19 @@
 
       <!-- 作品コラージュ -->
       <div class="hero-anim hero-anim-3 grid grid-cols-3 grid-rows-3 gap-4 aspect-square">
-        <div class="relative col-span-2 row-span-2 rounded-2xl overflow-hidden shadow-xl">
+        <div class="tilt relative col-span-2 row-span-2 rounded-2xl overflow-hidden shadow-xl">
           <img src="https://images.unsplash.com/photo-1490810194309-344b3661ba39?w=900&auto=format&fit=crop&q=60"
                alt="動画編集の様子" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         </div>
-        <div class="relative col-span-1 row-span-1 rounded-2xl overflow-hidden shadow-lg">
+        <div class="tilt relative col-span-1 row-span-1 rounded-2xl overflow-hidden shadow-lg">
           <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&auto=format&fit=crop&q=60"
                alt="撮影の様子" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         </div>
-        <div class="relative col-span-1 row-span-2 rounded-2xl overflow-hidden shadow-lg">
+        <div class="tilt relative col-span-1 row-span-2 rounded-2xl overflow-hidden shadow-lg">
           <img src="https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=500&auto=format&fit=crop&q=60"
                alt="映像クリエイターの作業風景" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         </div>
-        <div class="relative col-span-1 row-span-1 rounded-2xl overflow-hidden shadow-lg">
+        <div class="tilt relative col-span-1 row-span-1 rounded-2xl overflow-hidden shadow-lg">
           <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=500&auto=format&fit=crop&q=60"
                alt="撮影の様子" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         </div>
@@ -137,6 +157,14 @@
       </div>
     </div>
   </section>
+
+  <!-- Marquee -->
+  <div class="relative overflow-hidden border-y border-gray-200 py-4">
+    <div class="marquee-track flex whitespace-nowrap gap-12 text-sm sm:text-base font-bold tracking-widest text-gray-300">
+      <span>VLOG ・ 企業PR ・ ミュージックビデオ ・ 動画編集 ・ VLOG ・ 企業PR ・ ミュージックビデオ ・ 動画編集 ・</span>
+      <span aria-hidden="true">VLOG ・ 企業PR ・ ミュージックビデオ ・ 動画編集 ・ VLOG ・ 企業PR ・ ミュージックビデオ ・ 動画編集 ・</span>
+    </div>
+  </div>
 
   <!-- Mission -->
   <section id="mission" class="px-6 py-32 border-t border-gray-200 flex items-center justify-center text-center min-h-[70vh]">
@@ -205,7 +233,10 @@
   </section>
 
   <footer class="px-6 py-8 border-t border-gray-200 text-center text-gray-400 text-xs">
-    &copy; ツツミーズ
+    <span id="footer-logo" class="cursor-pointer select-none">&copy; ツツミーズ</span>
+    <div id="easter-egg" class="hidden mt-3 text-gray-500">
+      🎮 隠しコマンド発見...！<a href="index.html" class="underline hover:text-gray-900 transition-colors">じゃんけんゲームで遊ぶ</a>
+    </div>
   </footer>
 
   <script async src="https://www.tiktok.com/embed.js"></script>
@@ -227,6 +258,48 @@
         el.classList.add('is-visible');
       });
     }
+
+    // 作品コラージュのチルト演出(マウス操作時のみ)
+    document.querySelectorAll('.tilt').forEach(function (el) {
+      el.addEventListener('mousemove', function (e) {
+        var rect = el.getBoundingClientRect();
+        var x = (e.clientX - rect.left) / rect.width - 0.5;
+        var y = (e.clientY - rect.top) / rect.height - 0.5;
+        el.style.transform =
+          'perspective(600px) rotateX(' + (y * -10) + 'deg) rotateY(' + (x * 10) + 'deg) scale(1.03)';
+      });
+      el.addEventListener('mouseleave', function () {
+        el.style.transform = '';
+      });
+    });
+
+    // 隠しコマンド: フッターのロゴを5回連続クリックで出現
+    (function () {
+      var count = 0;
+      var timer = null;
+      var logo = document.getElementById('footer-logo');
+      var egg = document.getElementById('easter-egg');
+      if (!logo || !egg) return;
+      logo.addEventListener('click', function () {
+        count++;
+        clearTimeout(timer);
+        timer = setTimeout(function () { count = 0; }, 1500);
+        if (count >= 5) {
+          egg.classList.remove('hidden');
+          count = 0;
+        }
+      });
+    })();
+  </script>
+  <script>
+    console.log(
+      '%c ツツミーズ ',
+      'background:#0a0a0a;color:#fff;font-size:20px;font-weight:900;padding:8px 16px;border-radius:8px;'
+    );
+    console.log(
+      '%cのぞいてくれてありがとうございます！一緒にお仕事しませんか？ → tsutsumizu.video@gmail.com',
+      'font-size:13px;color:#666;'
+    );
   </script>
 </body>
 </html>
