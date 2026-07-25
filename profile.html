@@ -71,13 +71,15 @@
       transform: translateY(0);
     }
 
-    .reveal.mission-fade {
-      transform: translateY(16px);
-      filter: blur(12px);
-      transition: opacity 1.6s ease, transform 1.6s ease, filter 1.6s ease;
+    .char {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(0.6em);
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
-    .reveal.mission-fade.is-visible {
-      filter: blur(0);
+    .reveal.is-visible .char {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .marquee-track {
@@ -176,11 +178,13 @@
 
   <!-- Mission -->
   <section id="mission" class="px-6 py-32 border-t border-gray-200 flex items-center justify-center text-center min-h-[70vh]">
-    <div class="reveal mission-fade max-w-4xl mx-auto">
+    <div class="reveal max-w-4xl mx-auto">
       <p class="text-gray-500 tracking-[0.3em] text-xs sm:text-sm mb-8">MISSION</p>
-      <h2 class="font-black text-4xl sm:text-6xl md:text-7xl leading-tight tracking-tight-bold">
-        伝えよう。<br />
-        まだ見ぬ世界を。
+      <h2 id="mission-heading" class="font-black text-4xl sm:text-6xl md:text-7xl leading-tight tracking-tight-bold" aria-label="伝えよう。まだ見ぬ世界を。">
+        <span aria-hidden="true">
+          <span class="mission-line">伝えよう。</span><br />
+          <span class="mission-line">まだ見ぬ世界を。</span>
+        </span>
       </h2>
     </div>
   </section>
@@ -264,6 +268,25 @@
 
   <script async src="https://www.tiktok.com/embed.js"></script>
   <script>
+    // Missionの見出しを1文字ずつのspanに分解し、順番にフェードインさせる
+    (function () {
+      var heading = document.getElementById('mission-heading');
+      if (!heading) return;
+      var index = 0;
+      heading.querySelectorAll('.mission-line').forEach(function (line) {
+        var text = line.textContent;
+        line.textContent = '';
+        text.split('').forEach(function (ch) {
+          var span = document.createElement('span');
+          span.className = 'char';
+          span.textContent = ch;
+          span.style.transitionDelay = (index * 40) + 'ms';
+          line.appendChild(span);
+          index++;
+        });
+      });
+    })();
+
     if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
       var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
