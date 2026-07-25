@@ -75,7 +75,7 @@
       display: inline-block;
       opacity: 0;
       transform: translateY(0.6em);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      transition: opacity 0.8s ease, transform 0.8s ease;
     }
     .reveal.is-visible .char {
       opacity: 1;
@@ -280,7 +280,7 @@
           var span = document.createElement('span');
           span.className = 'char';
           span.textContent = ch;
-          span.style.transitionDelay = (index * 40) + 'ms';
+          span.style.transitionDelay = (index * 90) + 'ms';
           line.appendChild(span);
           index++;
         });
