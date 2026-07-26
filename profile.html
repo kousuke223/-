@@ -167,7 +167,21 @@
         <a href="#works" class="hover:text-gray-900 transition-colors">Works</a>
         <a href="#contact" class="hover:text-gray-900 transition-colors">Contact</a>
       </nav>
+      <button id="menu-button" class="sm:hidden p-2 -mr-2 text-gray-700" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobile-nav">
+        <svg id="icon-menu" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
+    <nav id="mobile-nav" class="hidden sm:hidden flex-col px-6 pb-2 text-sm text-gray-600 bg-white/95 backdrop-blur border-t border-gray-200">
+      <a href="#mission" class="py-3 border-b border-gray-100">Mission</a>
+      <a href="#about" class="py-3 border-b border-gray-100">About</a>
+      <a href="#works" class="py-3 border-b border-gray-100">Works</a>
+      <a href="#contact" class="py-3">Contact</a>
+    </nav>
   </header>
 
   <!-- Hero -->
@@ -387,6 +401,36 @@
         el.classList.add('is-visible');
       });
     }
+
+    // モバイル用ハンバーガーメニューの開閉
+    (function () {
+      var btn = document.getElementById('menu-button');
+      var mobileNav = document.getElementById('mobile-nav');
+      var iconMenu = document.getElementById('icon-menu');
+      var iconClose = document.getElementById('icon-close');
+      if (!btn || !mobileNav) return;
+      function closeMenu() {
+        mobileNav.classList.add('hidden');
+        mobileNav.classList.remove('flex');
+        iconMenu.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+      function openMenu() {
+        mobileNav.classList.remove('hidden');
+        mobileNav.classList.add('flex');
+        iconMenu.classList.add('hidden');
+        iconClose.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+      btn.addEventListener('click', function () {
+        var isOpen = mobileNav.classList.contains('flex');
+        if (isOpen) { closeMenu(); } else { openMenu(); }
+      });
+      mobileNav.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', closeMenu);
+      });
+    })();
 
     // 作品コラージュのチルト演出(マウス操作時のみ)
     document.querySelectorAll('.tilt').forEach(function (el) {
