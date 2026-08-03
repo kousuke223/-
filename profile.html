@@ -280,17 +280,21 @@
       <h2 class="font-black text-3xl sm:text-4xl mb-12 tracking-tight-bold">実績紹介</h2>
 
       <div class="grid sm:grid-cols-2 gap-8 max-w-3xl mx-auto sm:mx-0">
-        <!-- Work item 1 (TikTok embed) -->
+        <!-- Work item 1 (TikTokサムネイル+再生ボタン) -->
         <div class="group">
-          <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden flex justify-center py-4">
-            <blockquote
-              class="tiktok-embed"
-              cite="https://www.tiktok.com/@user4817329081440/video/7638530415946370322"
-              data-video-id="7638530415946370322"
-              style="max-width: 325px; min-width: 260px;">
-              <section></section>
-            </blockquote>
-          </div>
+          <a href="https://www.tiktok.com/@user4817329081440/video/7638530415946370322"
+             target="_blank" rel="noopener"
+             class="relative block aspect-[9/16] max-w-[260px] mx-auto sm:mx-0 bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+            <img src="https://p16-common-sign.tiktokcdn.com/tos-alisg-p-0037/okbDFCCpvI2ua4fBIAuvEfeC4gAkUIAr1DUjAh~tplv-tiktokx-origin.image?dr=14575&x-expires=1785891600&x-signature=dkfj2Fe1SRBGgm6bq%2FuyVGDeif0%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=my"
+                 alt="田中精肉店" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+            <span class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+              <span class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-gray-900 ml-1">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </span>
+          </a>
           <p class="mt-4 font-bold">田中精肉店</p>
           <p class="text-sm text-gray-500">地域のお肉屋さんのために制作したSNS向け短尺動画。ショート動画ならではのテンポ感を意識した編集。</p>
           <a href="https://www.tiktok.com/@user4817329081440/video/7638530415946370322"
@@ -300,17 +304,21 @@
           </a>
         </div>
 
-        <!-- Work item 2 (TikTok embed) -->
+        <!-- Work item 2 (TikTokサムネイル+再生ボタン) -->
         <div class="group">
-          <div class="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden flex justify-center py-4">
-            <blockquote
-              class="tiktok-embed"
-              cite="https://www.tiktok.com/@pitcher_yujin/video/7626694342635212053"
-              data-video-id="7626694342635212053"
-              style="max-width: 325px; min-width: 260px;">
-              <section></section>
-            </blockquote>
-          </div>
+          <a href="https://www.tiktok.com/@pitcher_yujin/video/7626694342635212053"
+             target="_blank" rel="noopener"
+             class="relative block aspect-[9/16] max-w-[260px] mx-auto sm:mx-0 bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
+            <img src="https://p16-common-sign.tiktokcdn.com/tos-alisg-p-0037/okn6uIqIBNvp7Ad2wifiAFCHaiQkN0ACa1rIyX~tplv-tiktokx-origin.image?dr=14575&x-expires=1785891600&x-signature=hj4o7wqu9ZibNDHmEUPiha%2BZT%2Bo%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=my"
+                 alt="音ハメ動画" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+            <span class="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+              <span class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-gray-900 ml-1">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </span>
+          </a>
           <p class="mt-4 font-bold">音ハメ動画</p>
           <p class="text-sm text-gray-500">音楽のリズムに合わせてカットを刻む、テンポ感を追求した編集。</p>
           <a href="https://www.tiktok.com/@pitcher_yujin/video/7626694342635212053"
@@ -363,7 +371,6 @@
     </div>
   </footer>
 
-  <script async src="https://www.tiktok.com/embed.js"></script>
   <script>
     // Missionの見出しを1文字ずつのspanに分解し、順番にフェードインさせる
     (function () {
