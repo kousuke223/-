@@ -10,6 +10,11 @@
 | 💰 お金クリッカー | [`money.html`](money.html) | クリックでお金を稼ぎ、施設を買って自動収入を増やす放置ゲーム。セーブ＆放置収入あり。 |
 | ✊ じゃんけん | [`index.html`](index.html) | 5点先取のじゃんけんゲーム。 |
 
+## YouTube用の素材
+
+[`sekunuyu-ending/`](sekunuyu-ending/) に、YouTubeチャンネル「せくぬゆ」のエンディング動画と、
+それを作るスクリプトがあります。使い方は [`sekunuyu-ending/README.md`](sekunuyu-ending/README.md) を見てください。
+
 ## 名刺用QRコード
 
 `assets/qr-code.png` は GitHub Pages で公開した `profile.html`
