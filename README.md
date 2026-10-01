@@ -15,6 +15,9 @@
 [`sekunuyu-ending/`](sekunuyu-ending/) に、YouTubeチャンネル「せくぬゆ」のエンディング動画と、
 それを作るスクリプトがあります。使い方は [`sekunuyu-ending/README.md`](sekunuyu-ending/README.md) を見てください。
 
+[`sekunuyu-thumbnail/`](sekunuyu-thumbnail/) には「マイクラ ハードコア #2（ネザー探検）」のサムネイルと、
+それを作るスクリプトがあります（[`sekunuyu-thumbnail/README.md`](sekunuyu-thumbnail/README.md)）。
+
 ## 名刺用QRコード
 
 `assets/qr-code.png` は GitHub Pages で公開した `profile.html`
