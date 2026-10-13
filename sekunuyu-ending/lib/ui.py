@@ -280,3 +280,22 @@ def thumb_sprite() -> np.ndarray:
 
 def hand_sprite() -> np.ndarray:
     return from_strings(HAND, {"k": INK, "w": WHITE, "s": hexc("#C9D6EA")})
+
+
+ARROW_UP = [
+    "....kk....",
+    "...kwyk...",
+    "..kwyyyk..",
+    ".kwyyyyyk.",
+    "kyyyyyyyyk",
+    "kkkyyyykkk",
+    "..kyyyyk..",
+    "..kyyyyk..",
+    "..kooook..",
+    "..kkkkkk..",
+]
+
+
+def arrow_up_sprite() -> np.ndarray:
+    """登録リングを指す上向きの矢印。"""
+    return from_strings(ARROW_UP, {"k": INK, "y": YELLOW, "o": hexc("#E08A1E"), "w": hexc("#FFF6C2")})

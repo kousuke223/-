@@ -207,6 +207,7 @@ class Assets:
         self.thumb = pil(ui.thumb_sprite(), 5)
         self.like = pil(ui.text_sprite(TEXT["like"], ui.WHITE, ui.CREAM, accent=ui.ORANGE), 4)
         self.hand = pil(ui.hand_sprite(), 5)
+        self.arrow = pil(ui.arrow_up_sprite(), 8)
         self.heart_big = pil(heart_sprite(), 5)
         sprites = {"star": pil(star_sprite(), 5), "sparkle": pil(sparkle_sprite(), 5),
                    "heart": pil(heart_sprite(), 5), "ystar": pil(sparkle_sprite(ui.YELLOW), 5)}
@@ -228,13 +229,16 @@ LOGO_C = (960, 560 + 172)      # ロゴの中心
 AVATAR_A_BOTTOM = (960, 632)   # シーンAのアバター（下中央）
 RIBBON_C = (960, 902)
 TITLE_Y = 18
-FRAME_INNER = [(250, 246), (1030, 246)]   # 動画要素を置く内側の左上（640x360）
-RING_C = (960, 850)
+# 終了画面の要素（動画×2・登録）は画面の真ん中に横一列で並べる。
+# 画面の下1割は再生バーに隠れやすいので、YouTube の要素は置かない。
+FRAME_INNER = [(68, 262), (1212, 262)]   # 動画要素を置く内側の左上（640x360）
+RING_C = (960, 442)                      # 登録要素の丸枠（動画枠と同じ高さ）
 AVATAR_B = (50, 1080 + 40)     # 左下
 BUBBLE_TL = (300, 650)
 THUMB_TL = (1215, 780)
 LIKE_TL = (1350, 760)
-CLICK_POINT = (1086, 972)      # 登録リングの右下のふち
+CLICK_POINT = (1090, 572)      # 登録リングの右下のふち
+ARROW_C = (960, 712)           # 登録リングを指す矢印
 
 
 class Renderer:
@@ -397,6 +401,11 @@ class Renderer:
             ring = pil(a.ui.subscribe_ring(40, 4, t), 4)
             pulse = 1 + 0.035 * max(0.0, math.cos(2 * math.pi * ((t - T.B_MUSIC) / (2 * T.BEAT)))) ** 12
             put(frame, ring, RING_C[0], RING_C[1], "c", scale=ease_out_back(p, 2.0) * pulse)
+        # 登録リングを指す矢印（拍に合わせてぴょこぴょこ）
+        p = (t - T.B_RING - 0.3) / 0.3
+        if p > 0:
+            bob = -10 if beat < 0.5 else 0
+            put(frame, a.arrow, ARROW_C[0], ARROW_C[1] + bob, "c", scale=ease_out_back(p, 2.2))
 
         # アバター（左下からひょこっと）
         p = (t - T.B_AVATAR) / 0.45
