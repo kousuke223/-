@@ -283,7 +283,7 @@ PANTS = {
 }
 # 右足だけに付けるワッペン：(面, 上からの行, 左からの列, ドット絵)
 PATCHES = {"rollup": ("front", 2, 0, [".y.", "yYy", ".y."])}
-PANTS_STYLE = "rollup"
+PANTS_STYLE = "ender"
 
 
 def mirror(part: dict) -> dict:
