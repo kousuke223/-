@@ -25,7 +25,7 @@ from lib import overlay as ov  # noqa: E402
 from lib.fonts import BLACK, ensure_fonts  # noqa: E402
 from lib.models import Pose, player  # noqa: E402
 from lib.post import tonemap  # noqa: E402
-from lib.skin import load_skin, skin_textures  # noqa: E402
+from lib.skin import CHANNEL_SKIN, load_skin, skin_textures  # noqa: E402
 from lib.voxel import Camera, Lights, render  # noqa: E402
 
 SIZE = 800
@@ -33,9 +33,6 @@ SS = 2                       # 2倍で描いて縮める
 YELLOW = [(255, 236, 140), (255, 196, 40)]
 PURPLE = [(120, 70, 190), (40, 22, 70)]
 SPARK = [(194, 91, 255), (123, 59, 181), (236, 190, 255)]
-
-
-SKIN = os.path.join(ROOT, "sekunuyu-skin", "sekunuyu_skin.png")
 
 
 # ---------------------------------------------------------------- 背景
@@ -211,7 +208,7 @@ def options_sheet(icons: dict) -> Image.Image:
 
 def main():
     ensure_fonts()
-    skin = load_skin(SKIN)
+    skin = load_skin(CHANNEL_SKIN)
     T = skin_textures(skin)
     out = os.path.join(HERE, "output")
     os.makedirs(out, exist_ok=True)

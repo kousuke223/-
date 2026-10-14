@@ -135,182 +135,30 @@ def fire(seed=9):
 
 
 # ---------------------------------------------------------------- せくぬゆ（プレイヤー）
+# キャラはチャンネルのマイクラスキン（lib/skin.py の CHANNEL_SKIN）を着せる。ここには表情だけ置く
 
 SKIN = {
-    "h": hexc("#1C1820"), "H": hexc("#3E3848"), "g": hexc("#2B2533"),
-    "s": hexc("#F2C29B"), "S": hexc("#D9A07A"), "l": hexc("#FFDDBE"), "n": hexc("#C98A66"),
-    "w": hexc("#FFFFFF"), "k": hexc("#14101A"), "b": hexc("#2A1C1C"),
-    "m": hexc("#2E060C"), "t": hexc("#FFFFFF"), "r": hexc("#F0506A"),
-    "d": hexc("#8FD8FF"), "D": hexc("#E8F8FF"), "p": hexc("#8A92D0"),
-    "T": hexc("#F7F7F7"), "u": hexc("#D9DCE6"), "U": hexc("#B9BDCB"),
-    "j": hexc("#2E3F6E"), "J": hexc("#22305A"), "o": hexc("#3C3C46"), "O": hexc("#E6E6EA"),
-    "y": hexc("#FFD23F"), "Y": hexc("#E08A1E"),
+    "h": hexc("#1C1820"), "s": hexc("#F2C29B"), "w": hexc("#FFFFFF"), "k": hexc("#14101A"),
+    "m": hexc("#2E060C"), "r": hexc("#F0506A"),
 }
 
-FACE_SCREAM = [
-    "hhhhhhhhhhhhhhhh",
-    "hhHhhhhhhhhhHhhh",
-    "hhhhhhhhhhhhhhhh",
-    "shhhhhshhhhhhhhs",
-    "ssspssspssspsssd",
-    "sssbbssssssbbssD",
-    "sbbsssssssssssbb",
-    "swwwwssssswwwwss",
-    "swwwwssssswwwwss",
-    "swkwwssSssswkwss",
-    "swwwwssSsswwwwss",
-    "sssssmmmmmmsssss",
-    "ssssmmttttmmssss",
-    "ssssmmmmmmmmssss",
-    "ssssmmmrrmmmssss",
-    "sssssmmrrmmsssss",
+# スキン（8×8 の顔）用の叫び顔。#2 でスキンの顔の正面だけをこれに替える（前髪・フードはスキンのまま）
+SKIN_FACE_SCREAM = [
+    "hhhhhhhh",
+    "hhhhhhhh",
+    "hssssssh",
+    "hhhhsssh",
+    "swwsswws",
+    "swksskws",
+    "ssmmmmss",
+    "ssmrrmss",
 ]
-
-HEAD_SIDE = [
-    "hhhhhhhhhhhhhhhh",
-    "hhhHhhhhhhhhhhhh",
-    "hhhhhhhhhHhhhhhh",
-    "hhhhhhhhhhhhhhhh",
-    "hhhhhhhhhhhhhhhs",
-    "hhhhhhhhhhhhhsss",
-    "hhhhhhhhhhhhssss",
-    "hhhhhhhhhhhsssss",
-    "hhhhhhhhhhssssss",
-    "hhhhhhhhhhssssss",
-    "hhhhhhhhhsssssss",
-    "hhhhhhhhssssssss",
-    "hhhhhhhsssssssss",
-    "hhhhhhssssssSsss",
-    "hhhhhsssssssssss",
-    "hhhhssssssssssss",
-]
-
-
-def player_textures(expression=FACE_SCREAM):
-    face = from_strings(expression, SKIN)
-    side_l = from_strings(HEAD_SIDE, SKIN)          # +x 面（キャラの左）：右側が顔側
-    side_r = side_l[:, ::-1].copy()                 # -x 面（キャラの右）：左側が顔側
-    hair = np.zeros((16, 16, 4), np.uint8)
-    hair[...] = SKIN["h"]
-    rng = np.random.default_rng(3)
-    hl = rng.random((16, 16)) < 0.12
-    hair[hl] = SKIN["H"]
-    back = hair.copy()
-    back[13:] = SKIN["s"]
-    back[13:, 0:3] = SKIN["h"]
-    back[13:, 13:] = SKIN["h"]
-    chin = np.zeros((16, 16, 4), np.uint8)
-    chin[...] = SKIN["S"]
-    head = {"front": face, "back": back, "left": side_l, "right": side_r, "top": hair, "bottom": chin}
-
-    # 髪のボリューム（帽子レイヤー）：顔の部分は透明
-    hat_front = np.zeros((16, 16, 4), np.uint8)
-    fringe = [4, 5, 5, 4, 4, 3, 3, 3, 3, 4, 3, 3, 2, 2, 3, 4]  # 前髪の長さ（列ごと）
-    for x, n in enumerate(fringe):
-        hat_front[:n, x] = SKIN["h"]
-        hat_front[0, x] = SKIN["g"]
-    hat_front[1, 2:5] = SKIN["H"]
-    hat_front[1, 9:11] = SKIN["H"]
-    hat_side = np.zeros((16, 16, 4), np.uint8)
-    for x in range(16):
-        n = 6 if x < 10 else 4
-        hat_side[:n, x] = SKIN["h"]
-    hat_side[1, 3:6] = SKIN["H"]
-    hat_side_r = hat_side[:, ::-1].copy()
-    hat_back = np.zeros((16, 16, 4), np.uint8)
-    hat_back[:12] = SKIN["h"]
-    hat_back[2, 4:8] = SKIN["H"]
-    hat_top = hair.copy()
-    hat_top[3, 4:9] = SKIN["H"]
-    hat = {"front": hat_front, "back": hat_back, "left": hat_side, "right": hat_side_r, "top": hat_top}
-
-    # 胴体（白T）
-    def tee(w, h, front=False):
-        t = np.zeros((h, w, 4), np.uint8)
-        t[...] = SKIN["T"]
-        rng2 = np.random.default_rng(w * 31 + h)
-        t[rng2.random((h, w)) < 0.08] = SKIN["u"]
-        t[-2:] = SKIN["u"]
-        if front:
-            t[0, w // 2 - 3:w // 2 + 3] = SKIN["s"]
-            t[1, w // 2 - 2:w // 2 + 2] = SKIN["s"]
-            t[2, w // 2 - 1:w // 2 + 1] = SKIN["U"]
-            # 胸の小さなたんぽぽマーク
-            t[7, 4] = SKIN["y"]
-            t[6:9, 4] = SKIN["y"]
-            t[7, 3:6] = SKIN["y"]
-            t[7, 4] = SKIN["Y"]
-        return t
-
-    body = {"front": tee(16, 24, True), "back": tee(16, 24), "left": tee(8, 24), "right": tee(8, 24),
-            "top": tee(16, 8), "bottom": tee(16, 8)}
-
-    def arm(w, h):
-        t = np.zeros((h, w, 4), np.uint8)
-        t[...] = SKIN["s"]
-        t[:7] = SKIN["T"]
-        t[6] = SKIN["u"]
-        t[-4:] = SKIN["S"]
-        t[:, -1:] = SKIN["S"]
-        return t
-
-    arms = {k: arm(8, 24) for k in ("front", "back", "left", "right")}
-    arms["top"] = np.full((8, 8, 4), SKIN["T"], np.uint8)
-    arms["bottom"] = np.full((8, 8, 4), SKIN["S"], np.uint8)
-
-    def leg(w, h):
-        t = np.zeros((h, w, 4), np.uint8)
-        t[...] = SKIN["j"]
-        t[:, ::3] = SKIN["J"]
-        t[-5:] = SKIN["o"]
-        t[-1:] = SKIN["O"]
-        return t
-
-    legs = {k: leg(8, 24) for k in ("front", "back", "left", "right")}
-    legs["top"] = np.full((8, 8, 4), SKIN["j"], np.uint8)
-    legs["bottom"] = np.full((8, 8, 4), SKIN["O"], np.uint8)
-    return {"head": head, "hat": hat, "body": body, "arm": arms, "leg": legs}
 
 
 def solid(color, w=4, h=4):
     t = np.zeros((h, w, 4), np.uint8)
     t[...] = hexc(color)
     return t
-
-
-def headset_textures():
-    cup = solid("#FFD23F")
-    cup[0, :] = hexc("#FFF0A0")
-    cup[-1, :] = hexc("#E08A1E")
-    band = solid("#34364A")
-    return {"cup": {k: cup for k in ("front", "back", "left", "right", "top", "bottom")},
-            "cup_in": {k: solid("#34364A") for k in ("front", "back", "left", "right", "top", "bottom")},
-            "band": {k: band for k in ("front", "back", "left", "right", "top", "bottom")}}
-
-
-SWORD = [
-    "...........kkkk.",
-    "..........kddDk.",
-    ".........kddDDk.",
-    "........kddDDk..",
-    ".......kddDDk...",
-    "......kddDDk....",
-    ".kk..kddDDk.....",
-    ".kgkkddDDk......",
-    "..kgkdDDk.......",
-    "...kgkDk........",
-    "...kbgkk........",
-    "..kbkkgk........",
-    ".kbk..kgk.......",
-    "kkk....kk.......",
-    "kk..............",
-    "................",
-]
-
-
-def sword_texture():
-    return from_strings(SWORD, {"k": hexc("#16232A"), "d": hexc("#4AEDD9"), "D": hexc("#B8FFF4"),
-                                "g": hexc("#2B8F86"), "b": hexc("#6B4A2A")})
 
 
 # ---------------------------------------------------------------- ガスト

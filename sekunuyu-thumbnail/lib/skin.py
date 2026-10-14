@@ -1,8 +1,14 @@
 """マイクラのスキン画像（64×64）の決まり（どのパーツが画像のどこにあるか）と、3D モデル用の切り分け。"""
 from __future__ import annotations
 
+import os
+
 import numpy as np
 from PIL import Image
+
+# チャンネルのマイクラスキン（エンダーパーカー＋黄色いヘッドセット）。サムネとアイコンのキャラはこれを着る
+CHANNEL_SKIN = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                            "sekunuyu-skin", "sekunuyu_skin.png")
 
 # 各パーツのスキン画像上の位置（左上）と大きさ（幅, 高さ, 奥行き）。Minecraft の決まりどおり
 PARTS = {

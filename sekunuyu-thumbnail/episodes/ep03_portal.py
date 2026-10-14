@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import math
-import os
 
 import numpy as np
 from PIL import Image
@@ -12,7 +11,7 @@ from lib import overlay as ov
 from lib import textures as TX
 from lib.models import Pose, player
 from lib.post import bloom, blur, depth_of_field, grade, tonemap
-from lib.skin import load_skin, skin_textures
+from lib.skin import CHANNEL_SKIN, load_skin, skin_textures
 from lib.voxel import Camera, Face, Lights, render
 from lib.world3d import DIRT, GRASS, LEAVES, LOG, OBSIDIAN, PLANKS, STONE, VoxelWorld
 
@@ -23,9 +22,6 @@ W, H = 1280, 720
 PORTAL_X, PORTAL_Z = 2, -6
 PORTAL_IN = (PORTAL_X + 1, PORTAL_X + 3, 1, 4)   # 渦の範囲 x0, x1, y0, y1
 SUN_DIR = np.array([0.12, 0.1, -1.0])             # 夕日の方向（キャラとゲートのあいだの奥・低い）
-# キャラはチャンネルのマイクラスキン（エンダーパーカー＋黄色いヘッドセット）をそのまま着せる
-SKIN = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                    "sekunuyu-skin", "sekunuyu_skin.png")
 
 
 # ---------------------------------------------------------------- 地形
@@ -105,7 +101,8 @@ class Scene:
         self.cam = Camera((0.6, 1.4, 2.0), (0.6, 2.0, -2.0), 52, w, h)
         pose = Pose(yaw=-22, lean=4, head_yaw=30, head_pitch=4, head_roll=-4,
                     arm_r=(10, 8), arm_l=(-12, 88), leg_r=-6, leg_l=6)   # 左手でゲートを指さす
-        self.player_faces, self.pinfo = player(skin_textures(load_skin(SKIN)), None, None, (0, 0, 0), pose)
+        # キャラはチャンネルのマイクラスキン（エンダーパーカー＋黄色いヘッドセット）をそのまま着せる
+        self.player_faces, self.pinfo = player(skin_textures(load_skin(CHANNEL_SKIN)), None, None, (0, 0, 0), pose)
         x0, x1, y0, y1 = PORTAL_IN
         self.portal_c = np.array([(x0 + x1) / 2, (y0 + y1) / 2, PORTAL_Z + 0.5])
         sun_col = (1.15, 0.62, 0.32)
