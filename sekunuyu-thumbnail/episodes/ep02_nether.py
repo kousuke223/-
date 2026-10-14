@@ -116,10 +116,8 @@ class Scene:
                     arm_r=(-188, 58), arm_l=(26, 0), leg_r=-40, leg_l=35)
         self.ghast_pos = np.array([1.5, 7.3, -14.0])
         # 先にプレイヤーを置いて頭の位置を知る（ライトはあとで差し込む）
-        # キャラはチャンネルのマイクラスキン（エンダーパーカー）。顔の正面だけ叫び顔に替える
-        T = skin_textures(load_skin(CHANNEL_SKIN))
-        T["head"]["front"] = TX.from_strings(TX.SKIN_FACE_SCREAM, TX.SKIN)
-        self.player_faces, self.pinfo = player(T, None, None, (0, 0, 0), pose)
+        # キャラはチャンネルのマイクラスキン（エンダーパーカー）をそのまま着せる
+        self.player_faces, self.pinfo = player(skin_textures(load_skin(CHANNEL_SKIN)), None, None, (0, 0, 0), pose)
         gb, gm, gt = TX.ghast_textures()
         to_p = np.array([0.0, 1.6, 0.0]) - self.ghast_pos
         yaw = math.degrees(math.atan2(to_p[0], to_p[2]))

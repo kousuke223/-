@@ -134,27 +134,6 @@ def fire(seed=9):
     return out
 
 
-# ---------------------------------------------------------------- せくぬゆ（プレイヤー）
-# キャラはチャンネルのマイクラスキン（lib/skin.py の CHANNEL_SKIN）を着せる。ここには表情だけ置く
-
-SKIN = {
-    "h": hexc("#1C1820"), "s": hexc("#F2C29B"), "w": hexc("#FFFFFF"), "k": hexc("#14101A"),
-    "m": hexc("#2E060C"), "r": hexc("#F0506A"),
-}
-
-# スキン（8×8 の顔）用の叫び顔。#2 でスキンの顔の正面だけをこれに替える（前髪・フードはスキンのまま）
-SKIN_FACE_SCREAM = [
-    "hhhhhhhh",
-    "hhhhhhhh",
-    "hssssssh",
-    "hhhhsssh",
-    "swwsswws",
-    "swksskws",
-    "ssmmmmss",
-    "ssmrrmss",
-]
-
-
 def solid(color, w=4, h=4):
     t = np.zeros((h, w, 4), np.uint8)
     t[...] = hexc(color)
