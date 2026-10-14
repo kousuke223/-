@@ -15,7 +15,7 @@
 [`sekunuyu-ending/`](sekunuyu-ending/) に、YouTubeチャンネル「せくぬゆ」のエンディング動画と、
 それを作るスクリプトがあります。使い方は [`sekunuyu-ending/README.md`](sekunuyu-ending/README.md) を見てください。
 
-[`sekunuyu-thumbnail/`](sekunuyu-thumbnail/) にはマイクラ ハードコア実況（#2・#3）のサムネイルと、
+[`sekunuyu-thumbnail/`](sekunuyu-thumbnail/) にはマイクラ ハードコア実況（#1〜#3）のサムネイルと、
 それを作るスクリプトがあります（[`sekunuyu-thumbnail/README.md`](sekunuyu-thumbnail/README.md)）。
 
 [`sekunuyu-skin/`](sekunuyu-skin/) には、サムネイルのキャラ（黒髪・黄色いヘッドセット）のマイクラ用スキン（64×64、いまはエンダーマン風のパーカー）があります。

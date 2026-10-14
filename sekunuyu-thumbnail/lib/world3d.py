@@ -7,8 +7,10 @@ from .voxel import Face
 
 AIR, RACK, LAVA, GLOW, BRICK, MAGMA, QUARTZ, FALL = range(8)              # ネザー（#2）
 GRASS, DIRT, STONE, LOG, LEAVES, PLANKS, OBSIDIAN, WATER = range(8, 16)  # オーバーワールド（#3）
+DEEPSLATE, DTILES, SCULK = range(16, 19)                                  # ディープダーク（#1）
 LIQUIDS = (LAVA, WATER)
-EMISSIVE = {LAVA: 0.82, GLOW: 1.05, FALL: 1.15}
+EMISSIVE = {LAVA: 0.82, GLOW: 1.05, FALL: 1.15}   # ブロック全体が光る
+SPECKLED = {MAGMA: 1.3, SCULK: 1.1}               # テクスチャの光る所（emask）だけ光る
 
 # 6方向: (法線, 隣のずれ)
 DIRS = {
@@ -109,8 +111,8 @@ def _block_face(name, x, y, z, b, tex, rng, n_run, run_axis):
         P0, E1, E2, rep = (x + 1, y + top, z + hz), -ez, np.array([0, -top, 0]), (rep_z[0], 1)
     else:  # nx
         P0, E1, E2, rep = (x, y + top, z), ez, np.array([0, -top, 0]), (rep_z[0], 1)
-    varied = (RACK, QUARTZ, BRICK, GRASS, DIRT, STONE, LEAVES, PLANKS)
+    varied = (RACK, QUARTZ, BRICK, GRASS, DIRT, STONE, LEAVES, PLANKS, DEEPSLATE, DTILES)
     tint = tuple(np.clip(1 + rng.normal(0, 0.05), 0.85, 1.12) * np.ones(3)) if b in varied else (1, 1, 1)
     return Face(np.array(P0, float), np.asarray(E1, float), np.asarray(E2, float), t,
-                emis=EMISSIVE.get(b, 0.0) if b != MAGMA else 1.3, emask=emask, rep=rep, tint=tint,
+                emis=EMISSIVE.get(b, SPECKLED.get(b, 0.0)), emask=emask, rep=rep, tint=tint,
                 lit=b not in EMISSIVE)

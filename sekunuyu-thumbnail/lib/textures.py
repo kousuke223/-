@@ -263,3 +263,98 @@ def portal(seed=28):
     warp = _noise(16, 16, seed, 4) * 6
     v = 0.5 + 0.3 * np.sin((xx + yy * 0.6 + warp) * 0.9) + 0.2 * rng.random((16, 16))
     return _palette_map(np.clip(v, 0, 0.999), ["#2A0A66", "#3E1290", "#5218B8", "#6A2AD8", "#9A62F4"])
+
+
+# ---------------------------------------------------------------- ディープダーク（#1）
+
+
+def deepslate(seed=31):
+    """深層岩：黒っぽい灰色に、たての筋。"""
+    rng = np.random.default_rng(seed)
+    xx = np.mgrid[0:16, 0:16][1]
+    n = 0.45 * _noise(16, 16, seed, 4) + 0.35 * rng.random((16, 16))
+    n += 0.2 * (0.5 + 0.5 * np.sin(xx * 1.7 + rng.random() * 6))
+    return _palette_map(np.clip(n, 0, 0.999), ["#24242A", "#2C2C33", "#35353D", "#3E3E47", "#4A4A53"])
+
+
+def deepslate_tiles(seed=32):
+    """深層岩タイル：4×4 のタイルと暗いすき間（古代都市のかべ）。"""
+    t = deepslate(seed)
+    rng = np.random.default_rng(seed)
+    for ty in range(4):
+        for tx in range(4):
+            blk = t[ty * 4:ty * 4 + 4, tx * 4:tx * 4 + 4, :3].astype(float) * rng.uniform(0.85, 1.12)
+            t[ty * 4:ty * 4 + 4, tx * 4:tx * 4 + 4, :3] = np.clip(blk, 0, 255).astype(np.uint8)
+    t[3::4, :] = hexc("#141418")
+    t[:, 3::4] = hexc("#1A1A20")
+    return t
+
+
+def sculk(seed=33):
+    """スカルク：暗い青緑に、光る水色のつぶ（つぶの所だけ光る）。"""
+    rng = np.random.default_rng(seed)
+    n = 0.5 * _noise(16, 16, seed, 4) + 0.5 * rng.random((16, 16))
+    out = _palette_map(n, ["#06161D", "#091F28", "#0C2833", "#0F323F"])
+    spk = rng.random((16, 16)) < 0.08
+    out[spk] = hexc("#25C8CC")
+    out[spk & (rng.random((16, 16)) < 0.5)] = hexc("#9AF6F0")
+    return out, np.where(spk, 1.0, 0.0).astype(np.float32)
+
+
+TORCH_COLORS = {"stick": "#6B4A2A", "stick_d": "#4E3418", "ember": "#3A2412", "flame": "#FFE680", "flame_o": "#FFA020"}
+
+
+WARDEN_PAL = ["#030A10", "#06121A", "#0A1A24", "#0D222E", "#112B3A"]
+
+
+def _warden_skin(w, h, seed):
+    rng = np.random.default_rng(seed)
+    n = 0.55 * _noise(h, w, seed, 3) + 0.45 * rng.random((h, w))
+    out = _palette_map(n, WARDEN_PAL)
+    out[rng.random((h, w)) < 0.05] = hexc("#1A4252")
+    return out
+
+
+def warden_textures():
+    """ウォーデン（オリジナルのドット絵）。光る所は (テクスチャ, emask) にしてある。"""
+    glow, glow_l = hexc("#4FF0EA"), hexc("#B8FFF8")
+
+    def box(w, h, d, seed):
+        return {"front": _warden_skin(w, h, seed), "back": _warden_skin(w, h, seed + 1),
+                "left": _warden_skin(d, h, seed + 2), "right": _warden_skin(d, h, seed + 3),
+                "top": _warden_skin(w, d, seed + 4), "bottom": _warden_skin(w, d, seed + 5)}
+
+    body = box(18, 21, 11, 40)
+    # 胸：光るあばら骨と、閉じこめられたたましい（丸い顔）
+    chest = body["front"]
+    em = np.zeros((21, 18), np.float32)
+    for y, x0, x1 in [(4, 4, 14), (7, 3, 15), (10, 4, 14), (13, 5, 13)]:
+        for x in range(x0, x1):
+            if x not in (8, 9):            # まん中は背骨の線であける
+                chest[y, x] = glow
+                em[y, x] = 1.0
+    for cx, cy in [(6, 5), (11, 8), (7, 11), (12, 5)]:
+        chest[cy:cy + 2, cx:cx + 2] = glow_l
+        em[cy:cy + 2, cx:cx + 2] = 1.0
+    body["front"] = (chest, em)
+    head = box(16, 16, 10, 50)
+    face = head["front"]
+    face[10:12, 3:13] = hexc("#020506")    # 口
+    face[10, 4:12:2] = hexc("#5A7A7E")     # 歯
+    face[2:4, 2:5] = hexc("#173C44")
+    face[2:4, 11:14] = hexc("#173C44")
+    head["front"] = face
+    arm = box(8, 28, 8, 60)
+    leg = box(6, 13, 6, 70)
+    # 頭の横の触角（板1枚）：ふちは暗く、中が水色に光る
+    tw, th = 9, 16
+    ten = _warden_skin(tw, th, 80)
+    tem = np.zeros((th, tw), np.float32)
+    yy, xx = np.mgrid[0:th, 0:tw]
+    inner = (xx >= 2) & (xx <= tw - 3) & (yy >= 2) & (yy <= th - 3) & (((xx + yy) % 3) != 0)
+    ten[inner] = glow
+    ten[inner & (yy < 6)] = glow_l
+    tem[inner] = 1.0
+    ten[0, :] = (0, 0, 0, 0)
+    ten[:, -1] = (0, 0, 0, 0)
+    return {"body": body, "head": head, "arm": arm, "leg": leg, "tendril": (ten, tem)}

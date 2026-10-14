@@ -79,6 +79,7 @@ def player(T, HS, item_tex, pos, pose: Pose, scale: float = 1.0, item_hand: str 
         part((1, 4.0, 1.5), (0, 0, 0), (4.75, 5.0, -0.75), np.eye(3), HS["band"], base=head)
         part((0.8, 0.8, 3.4), (-5.6, 1.8, 1.8), (0, 0, 0), rot_y(22), HS["band"], base=head)
         part((1.6, 1.6, 1.6), (-5.2, 1.4, 4.6), (0, 0, 0), np.eye(3), HS["cup"], base=head)
+    info["arm_r"], info["arm_l"] = (Mr, tr), (Ml, tl)   # 手に物を持たせるとき用（腕の向きと肩の位置）
     info["head_center"] = th + Mh @ (np.array([0, 4, 0]) * k)
     info["head_top"] = th + Mh @ (np.array([0, 9.5, 0]) * k)
     # 手に持つアイテム（剣や火打ち石など、16x16 のドット絵を板にして持たせる）
@@ -123,3 +124,54 @@ def ghast(body_tex, emask, tent_tex, pos, yaw=0.0, pitch=0.0, size=4.0, tent_len
         for f in faces:
             f.lights = lights
     return faces, mouth
+
+
+def _glow_box(size, tex, M, t, origin, k):
+    """box_faces と同じ。テクスチャが (絵, emask) の面は、その所だけ光らせる。"""
+    names = [n for n in ("front", "back", "left", "right", "top", "bottom") if n in tex]
+    rgb = {n: (tex[n][0] if isinstance(tex[n], tuple) else tex[n]) for n in names}
+    faces = box_faces(np.asarray(size, float) * k, rgb, M=M, t=t, origin=np.asarray(origin, float) * k)
+    for n, f in zip(names, faces):
+        if isinstance(tex[n], tuple):
+            f.emis, f.emask = 1.0, tex[n][1]
+    return faces
+
+
+def warden(tex: dict, pos, yaw: float = 0.0, lean: float = 0.0, head_pitch: float = 0.0,
+           arm_r: float = -30.0, arm_l: float = -30.0, leg_r: float = 0.0, leg_l: float = 0.0,
+           scale: float = 1.0, lights=None) -> tuple[list[Face], dict]:
+    """ウォーデン（深い暗闇の番人）。pos は足元のまん中、正面は +z。高さはおよそ 3 ブロック。
+    胸のたましいと頭の横の触角が光る。腕は前に出すとマイナス。"""
+    pos = np.asarray(pos, float)
+    R = rot_y(yaw)
+    k = PX * scale
+    faces: list[Face] = []
+
+    def part(size, pivot, origin, Rl, t, base=None):
+        R0, t0 = base if base else (R, pos)
+        M = R0 @ Rl
+        tt = t0 + R0 @ (np.asarray(pivot, float) * k)
+        faces.extend(_glow_box(size, t, M, tt, origin, k))
+        return M, tt
+
+    part((6, 13, 6), (-5, 13, 0), (-3, -13, -3), rot_x(leg_r), tex["leg"])
+    part((6, 13, 6), (5, 13, 0), (-3, -13, -3), rot_x(leg_l), tex["leg"])
+    body = part((18, 21, 11), (0, 13, 0), (-9, 0, -5.5), rot_x(lean), tex["body"])
+    part((8, 28, 8), (-13, 20, 0), (-4, -28, -4), rot_x(arm_r) @ rot_z(-6), tex["arm"], base=body)
+    part((8, 28, 8), (13, 20, 0), (-4, -28, -4), rot_x(arm_l) @ rot_z(6), tex["arm"], base=body)
+    Mh, th = part((16, 16, 10), (0, 21, 0), (-8, 0, -5), rot_x(-head_pitch), tex["head"], base=body)
+    # 頭の横から上に広がる触角（両面の板）
+    ten, tem = tex["tendril"]
+    for side in (-1, 1):
+        Rt = Mh @ rot_z(side * 24)
+        p0 = th + Mh @ (np.array([side * 7.5, 13, 0]) * k)
+        e1 = Rt @ (np.array([side * 9.0, 0, 0]) * k)
+        e2 = Rt @ (np.array([0, -16.0, 0]) * k)
+        top = p0 + Rt @ (np.array([0, 10.0, 0]) * k)
+        faces.append(Face(top, e1, e2, ten if side > 0 else ten[:, ::-1].copy(), emis=1.0,
+                          emask=tem if side > 0 else tem[:, ::-1].copy(), double=True))
+    if lights is not None:
+        for f in faces:
+            f.lights = lights
+    chest = body[1] + body[0] @ (np.array([0, 13, 6]) * k)
+    return faces, {"chest": chest, "head_center": th + Mh @ (np.array([0, 8, 0]) * k)}

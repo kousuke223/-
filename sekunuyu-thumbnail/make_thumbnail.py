@@ -21,6 +21,7 @@ from lib.fonts import ensure_fonts  # noqa: E402
 
 W, H = 1280, 720
 EPISODES = {
+    1: "episodes.ep01_deepdark",
     2: "episodes.ep02_nether",
     3: "episodes.ep03_portal",
 }

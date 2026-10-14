@@ -2,9 +2,9 @@
 
 YouTubeチャンネル「せくぬゆ」のマイクラ ハードコア実況シリーズのサムネイルです。
 
-| #3（最初からネザーゲート造りまで） | #2（ネザー探検） |
-| --- | --- |
-| ![#3](output/thumbnail_03.png) | ![#2](output/thumbnail_02.png) |
+| #3（最初からネザーゲート造りまで） | #2（ネザー探検） | #1（1日目・ディープダーク） |
+| --- | --- | --- |
+| ![#3](output/thumbnail_03.png) | ![#2](output/thumbnail_02.png) | ![#1](output/thumbnail_01.png) |
 
 ## できあがったファイル（`output/`）
 
@@ -12,6 +12,7 @@ YouTubeチャンネル「せくぬゆ」のマイクラ ハードコア実況シ
 | --- | --- |
 | `thumbnail_03.png` / `.jpg` | #3「この先、地獄。」（1280×720） |
 | `thumbnail_02.png` / `.jpg` | #2「ネザー、無理。」（1280×720） |
+| `thumbnail_01.png` / `.jpg` | #1「死んだら、終わり。」（1280×720） |
 
 JPG は約200KBで、YouTube の上限（2MB）に収まります。
 YouTube Studio →「コンテンツ」→ 動画の「詳細」→「サムネイル」→「ファイルをアップロード」で設定できます。
@@ -34,18 +35,26 @@ YouTube Studio →「コンテンツ」→ 動画の「詳細」→「サムネ�
 - せくぬゆ（チャンネルのマイクラスキン＝エンダーパーカー）が、ガストの火の玉からあわてて逃げている
 - 体力ハート（右上）は残り1.5個で「大ピンチ」
 
+### #1：死んだら、終わり。
+
+- 最初のサムネを、#2・#3 と同じ作り方で描き直したもの（キャラはチャンネルのスキン）
+- 暗いディープダークで、せくぬゆがたいまつを持って走り、うしろから光るウォーデンが迫ってくる
+- たいまつの暖かい色と、スカルクやウォーデンの水色の対比で目立たせる。ウォーデンのうしろをぼんやり光らせて形を浮かび上がらせている
+- 文字は「死んだら、終わり。」だけを真ん中下に（左上はロゴなどを入れられるようにあけてある）。体力ハート（右上）は1日目なので満タン
+- ウォーデンやブロックの模様は、すべてプログラムで描いたオリジナル
+
 ## 作り直すとき
 
 ```sh
 pip install -r requirements.txt   # Pillow / numpy / scipy
 python3 make_thumbnail.py                       # 全エピソードを output/ に書き出し（1枚30〜40秒）
-python3 make_thumbnail.py --episode 3           # #3 だけ
+python3 make_thumbnail.py --episode 3           # #3 だけ（1〜3）
 python3 make_thumbnail.py --episode 3 --preview # 等倍ですばやく確認（10秒くらい）
 ```
 
 - 文字を変えたい：各エピソードのファイルの `TEXT`（例：`episodes/ep03_portal.py`）
 - ポーズ・カメラ・ゲートや敵の位置：各エピソードの `Scene`
-- キャラ：#2・#3 とも `../sekunuyu-skin/sekunuyu_skin.png` を読み込んで着せている。スキンを変えて作り直すと、サムネのキャラも変わる
+- キャラ：#1〜#3 とも `../sekunuyu-skin/sekunuyu_skin.png` を読み込んで着せている。スキンを変えて作り直すと、サムネのキャラも変わる
 - 新しい回を作るときは `episodes/` にファイルを足して、`make_thumbnail.py` の `EPISODES` に登録する
 - フォントは初回実行時に Google Fonts から自動でダウンロードします。
 
@@ -54,6 +63,7 @@ python3 make_thumbnail.py --episode 3 --preview # 等倍ですばやく確認（
 | `make_thumbnail.py` | どの回を作るか選んで書き出す |
 | `episodes/ep03_portal.py` | #3 のシーン（夕焼けとネザーゲート）と文字組み |
 | `episodes/ep02_nether.py` | #2 のシーン（ネザーとガスト）と文字組み |
+| `episodes/ep01_deepdark.py` | #1 のシーン（ディープダークとウォーデン、たいまつ）と文字組み |
 | `lib/voxel.py` | ブロックを描く小さな 3D レンダラー（Zバッファ、テクスチャ、ライト） |
 | `lib/world3d.py` | 地形（ボクセル）から見える面だけを取り出す |
 | `lib/models.py` | せくぬゆ（プレイヤー）とガストの 3D モデル、ポーズ |
