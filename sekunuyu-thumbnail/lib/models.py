@@ -24,7 +24,7 @@ class Pose:
     leg_l: float = 0.0
 
 
-def player(T, HS, sword_tex, pos, pose: Pose, scale: float = 1.0, sword_hand: str = "right",
+def player(T, HS, item_tex, pos, pose: Pose, scale: float = 1.0, item_hand: str = "right",
            lights=None) -> tuple[list[Face], dict]:
     """プレイヤーの面のリストと、手や頭の位置（ワールド座標）を返す。"""
     pos = np.asarray(pos, float)
@@ -68,15 +68,15 @@ def player(T, HS, sword_tex, pos, pose: Pose, scale: float = 1.0, sword_hand: st
     part((1.6, 1.6, 1.6), (-5.2, 1.4, 4.6), (0, 0, 0), np.eye(3), HS["cup"], base=head)
     info["head_center"] = th + Mh @ (np.array([0, 4, 0]) * k)
     info["head_top"] = th + Mh @ (np.array([0, 9.5, 0]) * k)
-    # 剣
-    if sword_tex is not None:
-        Ma, ta = (Mr, tr) if sword_hand == "right" else (Ml, tl)
+    # 手に持つアイテム（剣や火打ち石など、16x16 のドット絵を板にして持たせる）
+    if item_tex is not None:
+        Ma, ta = (Mr, tr) if item_hand == "right" else (Ml, tl)
         L = 0.8 * scale
         hand = ta + Ma @ (np.array([0, -10.5, 1.0]) * k)
         e1 = Ma @ (np.array([0, -1, 1]) / np.sqrt(2) * L)
         e2 = Ma @ (np.array([0, -1, -1]) / np.sqrt(2) * L)
         p0 = hand - e2 - e1 * 0.06
-        faces.append(Face(p0, e1, e2, sword_tex, double=True))
+        faces.append(Face(p0, e1, e2, item_tex, double=True))
     info["back"] = tb + Mb @ (np.array([0, 8, -3]) * k)
     if lights is not None:
         for f in faces:

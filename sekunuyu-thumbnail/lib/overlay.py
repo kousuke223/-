@@ -157,3 +157,62 @@ def sweat(scale: int, angle: float = 0.0) -> Image.Image:
                 arr[y, x] = pal[ch]
     img = Image.fromarray(arr, "RGBA").resize((w * scale, h * scale), Image.NEAREST)
     return img.rotate(angle, resample=Image.NEAREST, expand=True) if angle else img
+
+
+DARK = (34, 6, 8, 255)
+
+
+def title_block(c: Image.Image, S: int, series: tuple[str, str], catch: tuple[str, str], badge_text: str,
+                black: str, dela: str, catch_size: tuple[int, int] = (86, 104)) -> tuple[int, int, int, int]:
+    """全エピソード共通の文字組み：シリーズ名（2語）＋キャッチ（白＋強調）＋番号バッジ。S 倍で描く。"""
+    shadow = (6 * S, 8 * S, (0, 0, 0, 170), 4 * S)
+    f = font(black, 118 * S)
+    b1 = fx_text(c, (22 * S, 2 * S), series[0], f,
+                 [(0, (255, 240, 120)), (0.5, (255, 206, 40)), (1, (255, 138, 18))],
+                 strokes=[(16 * S, DARK), (9 * S, (214, 28, 28, 255))], shadow=shadow, spacing=-4 * S)
+    fx_text(c, (b1[2] + 4 * S, 2 * S), series[1], f,
+            [(0, (255, 92, 70)), (0.55, (236, 28, 30)), (1, (176, 10, 16))],
+            strokes=[(16 * S, DARK), (9 * S, (255, 255, 255, 255))], shadow=shadow, spacing=-4 * S)
+    s1, s2 = catch_size
+    b2 = fx_text(c, (30 * S, 150 * S), catch[0], font(black, s1 * S), (255, 255, 255, 255),
+                 strokes=[(11 * S, DARK)], shadow=(5 * S, 7 * S, (60, 0, 0, 220), 2 * S), spacing=-4 * S)
+    b3 = fx_text(c, (b2[2] - 10 * S, (150 - (s2 - s1) * 7 // 9) * S), catch[1], font(black, s2 * S),
+                 [(0, (255, 250, 170)), (0.45, (255, 214, 60)), (1, (255, 120, 20))],
+                 strokes=[(13 * S, DARK)], shadow=(5 * S, 7 * S, (60, 0, 0, 220), 2 * S), spacing=-6 * S, rotate=-4)
+    return badge(c, (b3[2] + 6 * S, 156 * S), badge_text, font(dela, 64 * S), pad=(20 * S, 6 * S),
+                 border=8 * S, radius=16 * S, rotate=6)
+
+
+def hearts_bar(c: Image.Image, S: int, kinds: list[str], x: int = 26, y: int = 652) -> None:
+    """マイクラ風の体力ハート（左下に横一列）。"""
+    for i, k in enumerate(kinds):
+        c.alpha_composite(heart(k, 6 * S), ((x + i * 44) * S, y * S))
+
+
+def arrow(c: Image.Image, start, end, width: int, head_len: int, head_w: int, fill=(232, 28, 36, 255),
+          stroke=(255, 255, 255, 255), outline=DARK, stroke_w: int = 8, outline_w: int = 6) -> None:
+    """白フチ＋黒フチの太い矢印（start → end の向き）。"""
+    from PIL import ImageFilter as F
+    sx, sy = start
+    ex, ey = end
+    L = float(np.hypot(ex - sx, ey - sy))
+    ux, uy = (ex - sx) / L, (ey - sy) / L
+    nx, ny = -uy, ux
+    pts_local = [(0, -width / 2), (L - head_len, -width / 2), (L - head_len, -head_w / 2), (L, 0),
+                 (L - head_len, head_w / 2), (L - head_len, width / 2), (0, width / 2)]
+    pts = [(sx + ux * a + nx * b, sy + uy * a + ny * b) for a, b in pts_local]
+    m = stroke_w + outline_w + 4
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    x0, y0 = int(min(xs)) - m, int(min(ys)) - m
+    x1, y1 = int(max(xs)) + m, int(max(ys)) + m
+    mask = Image.new("L", (x1 - x0, y1 - y0), 0)
+    ImageDraw.Draw(mask).polygon([(x - x0, y - y0) for x, y in pts], fill=255)
+    white = mask.filter(F.MaxFilter(2 * stroke_w + 1))
+    dark = white.filter(F.MaxFilter(2 * outline_w + 1))
+    layer = Image.new("RGBA", mask.size, (0, 0, 0, 0))
+    shadow = Image.new("RGBA", mask.size, (0, 0, 0, 150))
+    layer.paste(shadow, (0, 0), dark.filter(F.GaussianBlur(outline_w)))
+    layer.paste(Image.new("RGBA", mask.size, outline), (0, 0), dark)
+    layer.paste(Image.new("RGBA", mask.size, stroke), (0, 0), white)
+    layer.paste(Image.new("RGBA", mask.size, fill), (0, 0), mask)
+    c.alpha_composite(layer, (max(0, x0), max(0, y0)), (max(0, -x0), max(0, -y0)))

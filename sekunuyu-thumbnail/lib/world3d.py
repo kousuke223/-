@@ -1,11 +1,13 @@
-"""ネザーの地形（ボクセル）を作って、見えている面だけを Face にする。"""
+"""マイクラの地形（ボクセル）を作って、見えている面だけを Face にする。"""
 from __future__ import annotations
 
 import numpy as np
 
 from .voxel import Face
 
-AIR, RACK, LAVA, GLOW, BRICK, MAGMA, QUARTZ, FALL = range(8)
+AIR, RACK, LAVA, GLOW, BRICK, MAGMA, QUARTZ, FALL = range(8)              # ネザー（#2）
+GRASS, DIRT, STONE, LOG, LEAVES, PLANKS, OBSIDIAN, WATER = range(8, 16)  # オーバーワールド（#3）
+LIQUIDS = (LAVA, WATER)
 EMISSIVE = {LAVA: 0.82, GLOW: 1.05, FALL: 1.15}
 
 # 6方向: (法線, 隣のずれ)
@@ -44,9 +46,9 @@ class VoxelWorld:
         for name, (dx, dy, dz) in DIRS.items():
             nb = pad[1 + dx:1 + dx + v.shape[0], 1 + dy:1 + dy + v.shape[1], 1 + dz:1 + dz + v.shape[2]]
             expose = (v != AIR) & (nb == AIR)
-            # 溶岩は少し低いので、となりのブロックの側面も見せる
+            # 溶岩や水は少し低いので、となりのブロックの側面も見せる
             if dy == 0:
-                expose |= (v != AIR) & (v != LAVA) & (nb == LAVA)
+                expose |= (v != AIR) & ~np.isin(v, LIQUIDS) & np.isin(nb, LIQUIDS)
             idx = np.argwhere(expose)
             if len(idx) == 0:
                 continue
@@ -80,12 +82,14 @@ def _runs(idx, v, name):
 
 def _block_face(name, x, y, z, b, tex, rng, n_run, run_axis):
     t = tex[b]
+    if isinstance(t, dict):  # 上・下・側面でちがう模様（草ブロックや原木）
+        t = t["top"] if name == "py" else t["bottom"] if name == "ny" else t["side"]
     if isinstance(t, list):
         t = t[rng.integers(len(t))]
     emask = None
     if isinstance(t, tuple):
         t, emask = t
-    top = 1.0 if b != LAVA else 0.875
+    top = 0.875 if b in LIQUIDS else 1.0
     L = float(n_run)
     ex = np.array([L, 0, 0]) if run_axis == 0 else np.array([1.0, 0, 0])
     ez = np.array([0, 0, L]) if run_axis == 2 else np.array([0, 0, 1.0])
@@ -105,7 +109,8 @@ def _block_face(name, x, y, z, b, tex, rng, n_run, run_axis):
         P0, E1, E2, rep = (x + 1, y + top, z + hz), -ez, np.array([0, -top, 0]), (rep_z[0], 1)
     else:  # nx
         P0, E1, E2, rep = (x, y + top, z), ez, np.array([0, -top, 0]), (rep_z[0], 1)
-    tint = tuple(np.clip(1 + rng.normal(0, 0.05), 0.85, 1.12) * np.ones(3)) if b in (RACK, QUARTZ, BRICK) else (1, 1, 1)
+    varied = (RACK, QUARTZ, BRICK, GRASS, DIRT, STONE, LEAVES, PLANKS)
+    tint = tuple(np.clip(1 + rng.normal(0, 0.05), 0.85, 1.12) * np.ones(3)) if b in varied else (1, 1, 1)
     return Face(np.array(P0, float), np.asarray(E1, float), np.asarray(E2, float), t,
                 emis=EMISSIVE.get(b, 0.0) if b != MAGMA else 1.3, emask=emask, rep=rep, tint=tint,
                 lit=b not in EMISSIVE)

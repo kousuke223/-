@@ -166,6 +166,26 @@ FACE_SCREAM = [
     "sssssmmrrmmsssss",
 ]
 
+# ゴクリ…（目を見開いて、口は小さく「お」の字、汗たらり）
+FACE_GULP = [
+    "hhhhhhhhhhhhhhhh",
+    "hhHhhhhhhhhhHhhh",
+    "hhhhhhhhhhhhhhhh",
+    "shhhhhshhhhhhhhs",
+    "ssspssspssspsssd",
+    "sssbbssssssbbssD",
+    "sbbsssssssssssbb",
+    "swwwwssssswwwwss",
+    "swwwwssssswwwwss",
+    "swkwwssSssswkwss",
+    "swwwwssSsswwwwss",
+    "ssssssssssssssss",
+    "sssssmmmmmmsssss",
+    "sssssmmrrmmsssss",
+    "ssssssmmmmssssss",
+    "ssssssssssssssss",
+]
+
 HEAD_SIDE = [
     "hhhhhhhhhhhhhhhh",
     "hhhHhhhhhhhhhhhh",
@@ -360,3 +380,79 @@ def ghast_textures():
     tentacle = {k: tent for k in ("front", "back", "left", "right")}
     tentacle["bottom"] = solid("#D8D6D4")
     return body, emask, tentacle
+
+
+# ---------------------------------------------------------------- オーバーワールド（#3）
+
+
+def grass_top(seed=21):
+    n = 0.6 * _noise(16, 16, seed, 4) + 0.4 * np.random.default_rng(seed).random((16, 16))
+    return _palette_map(n, ["#3F7F25", "#4C9230", "#59A23A", "#66B043", "#77BF4F"])
+
+
+def dirt(seed=22):
+    n = 0.5 * _noise(16, 16, seed, 3) + 0.5 * np.random.default_rng(seed).random((16, 16))
+    return _palette_map(n, ["#5A3B22", "#6B4628", "#79512F", "#875C36", "#966A40"])
+
+
+def grass_side(seed=23):
+    """土の上に草がたれている側面。"""
+    t = dirt(seed)
+    g = grass_top(seed + 1)
+    drip = 3 + np.random.default_rng(seed).integers(0, 3, 16)
+    for x in range(16):
+        t[:drip[x], x] = g[:drip[x], x]
+    return t
+
+
+def stone(seed=24):
+    n = 0.55 * _noise(16, 16, seed, 4) + 0.45 * np.random.default_rng(seed).random((16, 16))
+    return _palette_map(n, ["#6A6A6A", "#777777", "#848484", "#919191", "#9E9E9E"])
+
+
+def oak_log_side(seed=25):
+    rng = np.random.default_rng(seed)
+    v = 0.6 * rng.random(16)[None, :] + 0.4 * rng.random((16, 16))
+    return _palette_map(v, ["#3E2C18", "#4E3820", "#5E4528", "#6B5030"])
+
+
+def oak_log_top():
+    yy, xx = np.mgrid[0:16, 0:16] + 0.5
+    r = np.hypot(xx - 8, yy - 8)
+    out = _palette_map((np.sin(r * 1.6) * 0.5 + 0.5) * 0.999, ["#9A7444", "#B08A55", "#C29A60"])
+    out[r > 6.6] = hexc("#4E3820")
+    return out
+
+
+def oak_leaves(seed=26):
+    n = np.random.default_rng(seed).random((16, 16))
+    out = _palette_map(n, ["#1F4F14", "#2A631B", "#367822", "#438C2A"])
+    out[n < 0.08] = hexc("#163A0E")
+    return out
+
+
+def oak_planks():
+    out = np.zeros((16, 16, 4), np.uint8)
+    cols = ["#A57B48", "#B4874F", "#97703F", "#AD8150"]
+    for row in range(4):
+        out[row * 4:row * 4 + 4] = hexc(cols[row])
+        out[row * 4] = hexc("#6E5130")
+        cut = (row * 5 + 3) % 16
+        out[row * 4:row * 4 + 4, cut] = hexc("#6E5130")
+    return out
+
+
+def obsidian(seed=27):
+    n = 0.5 * _noise(16, 16, seed, 3) + 0.5 * np.random.default_rng(seed).random((16, 16))
+    out = _palette_map(n, ["#0E0A16", "#160F24", "#1E1530", "#271B40"])
+    out[np.random.default_rng(seed + 1).random((16, 16)) < 0.05] = hexc("#4A3580")
+    return out
+
+
+def portal(seed=28):
+    """ネザーゲートの渦（紫）。ゆらゆらした筋がななめに流れる。"""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:16, 0:16] + 0.5
+    warp = _noise(16, 16, seed, 4) * 6
+    v = 0.5 + 0.3 * np.sin((xx + yy * 0.6 + warp) * 0.9) + 0.2 * rng.random((16, 16))
+    return _palette_map(np.clip(v, 0, 0.999), ["#2A0A66", "#3E1290", "#5218B8", "#6A2AD8", "#9A62F4"])
