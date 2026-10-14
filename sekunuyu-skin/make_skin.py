@@ -196,16 +196,21 @@ def ender_tex(w: int, h: int, seed: int) -> list[str]:
     return ["".join("P" if x < 0.12 else "D" if x < 0.55 else "K" for x in row) for row in rng.random((h, w))]
 
 
-HEAD_HOOD = dict(HEAD, front=[
-    "hhhhhhhh",
-    "hhhhhhhh",
-    "hssssssh",
-    "sbbssbbs",     # 茶色いまゆ毛（前髪はフードの中）
-    "swksskws",
-    "swksskws",
-    "ssssssss",
-    "sssmmsss",
-])
+# フードをかぶったときの顔の、フードのすぐ下の1行。どれを使うかは HOOD_FACE で選ぶ
+HOOD_FACES = {
+    "bangs": "hhhhsssh",    # ななめに流した前髪がのぞく
+    "brows": "sbbssbbs",    # 前髪はフードの中で、茶色いまゆ毛
+    "plain": "ssssssss",    # 前髪はフードの中で、おでこだけ
+}
+HOOD_FACE = "bangs"
+
+
+def head_hood(face: str) -> dict:
+    return dict(HEAD, front=["hhhhhhhh", "hhhhhhhh", "hssssssh", HOOD_FACES[face], "swksskws", "swksskws",
+                             "ssssssss", "sssmmsss"])
+
+
+HEAD_HOOD = head_hood(HOOD_FACE)
 
 CUP = [   # フードの横に付けるヘッドセット（"." はフードのまま）
     "...zz...",
