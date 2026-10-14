@@ -238,23 +238,36 @@ def embers(img, n=170, seed=8, around=None):
 # ---------------------------------------------------------------- 文字入れ
 
 TEXT = {
-    "series1": "マイクラ",
-    "series2": "ハードコア",
     "catch1": "ネザー、",
     "catch2": "無理。",
-    "badge": "#2",
 }
 
 
 def compose(art: Image.Image, S: int) -> Image.Image:
-    """S 倍の大きさで文字・ハート・バッジを描く。"""
+    """S 倍の大きさで文字・ハート・汗を描く。文字は真ん中下のキャッチだけ（左上はロゴなどを入れられるようにあける）。"""
     c = art.convert("RGBA")
-    ov.title_block(c, S, (TEXT["series1"], TEXT["series2"]), (TEXT["catch1"], TEXT["catch2"]), TEXT["badge"],
-                   fonts.BLACK, fonts.DELA)
+    dark = ov.DARK
+    # 下の方を少し暗くして、大きい文字を読みやすく
+    h = c.height
+    grad = np.clip((np.arange(h) / h - 0.62) / 0.38, 0, 1) ** 1.4 * 150
+    band = np.zeros((h, c.width, 4), np.uint8)
+    band[..., 3] = grad.astype(np.uint8)[:, None]
+    c.alpha_composite(Image.fromarray(band, "RGBA"))
     # 飛び散る汗（頭の左側）
     for (sx, sy, ang, sc) in [(478, 300, 35, 5), (446, 362, 62, 4), (470, 426, 88, 4)]:
         c.alpha_composite(ov.sweat(sc * S, ang), (sx * S, sy * S))
-    ov.hearts_bar(c, S, ["full", "half"] + ["empty"] * 8)
+    # 体力ハート（右上。残り1.5個で大ピンチ）
+    ov.hearts_bar(c, S, ["full", "half"] + ["empty"] * 8, x=1280 - 26 - 9 * 44 - 42, y=24)
+    # 真ん中下：キャッチ（#3 と同じ大きさ・色）。いったん別の層に描いて、左右のまん中にそろえる
+    layer = Image.new("RGBA", c.size, (0, 0, 0, 0))
+    shadow = (6 * S, 8 * S, (40, 0, 30, 220), 3 * S)
+    b1 = ov.fx_text(layer, (200 * S, 548 * S), TEXT["catch1"], ov.font(fonts.BLACK, 104 * S), (255, 255, 255, 255),
+                    strokes=[(13 * S, dark)], shadow=shadow, spacing=-6 * S)
+    ov.fx_text(layer, (b1[2] - 14 * S, 512 * S), TEXT["catch2"], ov.font(fonts.BLACK, 150 * S),
+               [(0, (255, 250, 170)), (0.4, (255, 170, 40)), (1, (230, 30, 30))],
+               strokes=[(17 * S, dark), (8 * S, (120, 0, 40, 255))], shadow=shadow, spacing=-8 * S, rotate=-3)
+    bb = layer.getbbox()
+    c.alpha_composite(layer.crop((bb[0], 0, bb[2], c.height)), ((c.width - (bb[2] - bb[0])) // 2, 0))
     return c
 
 

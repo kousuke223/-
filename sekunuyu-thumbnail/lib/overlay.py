@@ -162,27 +162,6 @@ def sweat(scale: int, angle: float = 0.0) -> Image.Image:
 DARK = (34, 6, 8, 255)
 
 
-def title_block(c: Image.Image, S: int, series: tuple[str, str], catch: tuple[str, str], badge_text: str,
-                black: str, dela: str, catch_size: tuple[int, int] = (86, 104)) -> tuple[int, int, int, int]:
-    """全エピソード共通の文字組み：シリーズ名（2語）＋キャッチ（白＋強調）＋番号バッジ。S 倍で描く。"""
-    shadow = (6 * S, 8 * S, (0, 0, 0, 170), 4 * S)
-    f = font(black, 118 * S)
-    b1 = fx_text(c, (22 * S, 2 * S), series[0], f,
-                 [(0, (255, 240, 120)), (0.5, (255, 206, 40)), (1, (255, 138, 18))],
-                 strokes=[(16 * S, DARK), (9 * S, (214, 28, 28, 255))], shadow=shadow, spacing=-4 * S)
-    fx_text(c, (b1[2] + 4 * S, 2 * S), series[1], f,
-            [(0, (255, 92, 70)), (0.55, (236, 28, 30)), (1, (176, 10, 16))],
-            strokes=[(16 * S, DARK), (9 * S, (255, 255, 255, 255))], shadow=shadow, spacing=-4 * S)
-    s1, s2 = catch_size
-    b2 = fx_text(c, (30 * S, 150 * S), catch[0], font(black, s1 * S), (255, 255, 255, 255),
-                 strokes=[(11 * S, DARK)], shadow=(5 * S, 7 * S, (60, 0, 0, 220), 2 * S), spacing=-4 * S)
-    b3 = fx_text(c, (b2[2] - 10 * S, (150 - (s2 - s1) * 7 // 9) * S), catch[1], font(black, s2 * S),
-                 [(0, (255, 250, 170)), (0.45, (255, 214, 60)), (1, (255, 120, 20))],
-                 strokes=[(13 * S, DARK)], shadow=(5 * S, 7 * S, (60, 0, 0, 220), 2 * S), spacing=-6 * S, rotate=-4)
-    return badge(c, (b3[2] + 6 * S, 156 * S), badge_text, font(dela, 64 * S), pad=(20 * S, 6 * S),
-                 border=8 * S, radius=16 * S, rotate=6)
-
-
 def hearts_bar(c: Image.Image, S: int, kinds: list[str], x: int = 26, y: int = 652) -> None:
     """マイクラ風の体力ハート（左下に横一列）。"""
     for i, k in enumerate(kinds):
