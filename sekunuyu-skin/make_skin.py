@@ -32,7 +32,8 @@ PAL = {
     "D": "#28183F", "K": "#120A1A",                      # パーカーのフード（黒むらさき）・ふち
     "P": "#43296A", "p": "#573A86",                      # パーカーのむらさき・明るいむらさき
     "Z": "#CFCBDA", "z": "#8C8799",                      # ファスナーの歯（明るいグレー・グレー）
-    "e": "#C64CFF", "E": "#F2C6FF",                      # エンダーの目（むらさき・光）
+    "e": "#A93BEB", "E": "#E3A6FF",                      # エンダーの目（むらさき・うすむらさき）
+    "V": "#C25BFF", "v": "#7B3BB5",                      # エンダーのつぶつぶ（明るい・暗い）
 }
 
 # 各パーツのスキン画像上の位置（左上）と大きさ（幅, 高さ, 奥行き）。Minecraft の決まりどおり
@@ -52,6 +53,25 @@ def face_rects(u, v, w, h, d):
     return {"top": (u + d, v, w, d), "bottom": (u + d + w, v, w, d),
             "right": (u, v + d, d, h), "front": (u + d, v + d, w, h),
             "left": (u + d + w, v + d, d, h), "back": (u + 2 * d + w, v + d, w, h)}
+
+
+def mirror(part: dict) -> dict:
+    """左右反転（右腕 → 左腕など）。"""
+    flip = lambda rows: [r[::-1] for r in rows]
+    return {"top": flip(part["top"]), "bottom": flip(part["bottom"]), "front": flip(part["front"]),
+            "back": flip(part["back"]), "right": flip(part["left"]), "left": flip(part["right"])}
+
+
+def paste(rows: list[str], patch: list[str], x0: int, y0: int) -> list[str]:
+    """ドット絵の上に小さなドット絵を重ねる（"." の所はそのまま）。"""
+    rows = list(rows)
+    for dy, pr in enumerate(patch):
+        r = list(rows[y0 + dy])
+        for dx, ch in enumerate(pr):
+            if ch != ".":
+                r[x0 + dx] = ch
+        rows[y0 + dy] = "".join(r)
+    return rows
 
 
 # ---------------------------------------------------------------- ドット絵（"." は透明）
@@ -153,14 +173,44 @@ ARM = {   # 右腕（半そで）
 }
 
 # ---------------------------------------------------------------- エンダーパーカー（フードをかぶった服）
-# フードは帽子レイヤーに描く：前にエンダーの目、顔のまわりはファスナー。ヘッドセットはフードの上から付ける
+# フードは帽子レイヤーに描く：エンダーマンのまだら模様、前に光る目、顔のまわりはファスナー。
+# ヘッドセットはフードの上から付ける。服にはエンダーのつぶつぶ（V / v）を散らす
+
+
+def ender_tex(w: int, h: int, seed: int) -> list[str]:
+    """エンダーマンっぽい黒とむらさきのまだら模様。"""
+    rng = np.random.default_rng(seed)
+    return ["".join("P" if x < 0.12 else "D" if x < 0.55 else "K" for x in row) for row in rng.random((h, w))]
+
+
+HEAD_HOOD = dict(HEAD, front=[
+    "hhhhhhhh",
+    "hhhhhhhh",
+    "hssssssh",
+    "hhhhsssh",     # ファスナーの下から、ななめに流した前髪がのぞく
+    "swksskws",
+    "swksskws",
+    "ssssssss",
+    "sssmmsss",
+])
+
+CUP = [   # フードの横に付けるヘッドセット（"." はフードのまま）
+    "...zz...",
+    "...zz...",
+    "...zz...",
+    "..LyyY..",
+    "..yyyY..",
+    "..yyyY..",
+    "..YYYY..",
+    "........",
+]
 
 HAT_HOOD = {
-    "top": ["DDDDDDDD", "DPDDDPDD", "DDDPDDDD", "zzzzzzzz", "zzzzzzzz", "DDPDDDPD", "DDDDDDDD", "KKKKKKKK"],
+    "top": paste(ender_tex(8, 8, 1), ["zzzzzzzz", "zzzzzzzz"], 0, 3),
     "bottom": ["........"] * 8,
     "front": [
-        "DDDDDDDD",
-        "eEeKKeEe",
+        "DKDKKDKD",
+        "EeEKKEeE",
         "ZKZKZKZK",
         "K......Z",
         "Z......K",
@@ -168,63 +218,46 @@ HAT_HOOD = {
         "Z......K",
         "K......Z",
     ],
-    "right": [
-        "DDDzzDDD",
-        "DPDzzDPD",
-        "DDDzzDDD",
-        "DDLyyYDD",
-        "DPyyyYDD",
-        "DDyyyYPD",
-        "DDYYYYDD",
-        "KKKKKKKK",
-    ],
-    "left": [
-        "DDDzzDDD",
-        "DPDzzDPD",
-        "DDDzzDDD",
-        "DDLyyYDD",
-        "DDyyyYPD",
-        "DPyyyYDD",
-        "DDYYYYDD",
-        "KKKKKKKK",
-    ],
-    "back": ["DDDDDDDD", "DPDDDDPD", "DDDDPDDD", "DDPDDDDD", "DDDDDDPD", "DPDDDDDD", "DDDDPDDD", "KKKKKKKK"],
+    "right": paste(ender_tex(8, 8, 3), CUP, 0, 0),
+    "left": paste(ender_tex(8, 8, 4), CUP, 0, 0),
+    "back": ender_tex(8, 8, 5),
 }
 
 BODY_HOOD = {
-    "top": ["PPPPPPPP"] * 4,
+    "top": ender_tex(8, 4, 6),
     "bottom": ["KKKKKKKK"] * 4,
     "front": [
         "KPZssZPK",
         "KPPZzPPK",
+        "KPPZZPPK",     # ファスナーの引き手
+        "KVPzZPPK",
+        "KPPZzPvK",
         "KPPzZPPK",
-        "KPPZZPPK",
-        "KPPZZPPK",
-        "KPPPPPPK",
-        "KPPPPPPK",
-        "KppppppK",
-        "KpPPPPpK",
-        "KppppppK",
-        "KKKKKKKK",
-        "KKKKKKKK",
+        "KPvZzPPK",
+        "KPPzZPVK",
+        "KPPZzPPK",
+        "KVPzZPPK",
+        "KPPZzPvK",
+        "KKKzZKKK",
     ],
-    "back": ["KDDDDDDK", "KPDDDDPK"] + ["KPPPPPPK"] * 8 + ["KKKKKKKK", "KKKKKKKK"],
-    "right": ["PPPP"] * 10 + ["KKKK", "KKKK"],
+    "back": ender_tex(8, 3, 7) + ["KPPPPPPK", "KPVPPPPK", "KPPPPvPK", "KPPPPPPK", "KvPPPPPK", "KPPPPVPK",
+                                   "KPPPPPPK", "KPPvPPPK", "KKKKKKKK"],
+    "right": ["PPPP", "PvPP", "PPPP", "PPVP", "PPPP", "PPPP", "PvPP", "PPPP", "PPPP", "PPPV", "PPPP", "KKKK"],
 }
-BODY_HOOD["left"] = BODY_HOOD["right"]
+BODY_HOOD["left"] = [r[::-1] for r in BODY_HOOD["right"]]
 
-ARM_HOOD = {   # 右腕（長そで）
-    "top": ["PPPP"] * 4,
+ARM_HOOD = {   # 右腕（長そで、ふちどり＋つぶつぶのそで口）
+    "top": ender_tex(4, 4, 8),
     "bottom": ["SSSS"] * 4,
-    "front": ["KPPP"] * 9 + ["KKKK", "ssss", "SSSS"],
-    "back": ["PPPK"] * 9 + ["KKKK", "ssss", "SSSS"],
-    "right": ["PPPP"] * 9 + ["KKKK", "ssss", "SSSS"],
-    "left": ["DDDD"] * 9 + ["KKKK", "SSSS", "SSSS"],     # 体側（かげ）
+    "front": ["KPPK"] * 10 + ["VKvK", "ssss"],
+    "back": ["KPPK"] * 10 + ["KvKV", "ssss"],
+    "right": ["KPPK"] * 10 + ["vKVK", "ssss"],
+    "left": ["KDDK"] * 10 + ["KVKv", "SSSS"],     # 体側（かげ）
 }
 
 # 服の組み合わせ。どれを使うかは OUTFIT で選ぶ
 OUTFITS = {
-    "ender_hoodie": {"head": HEAD, "hat": HAT_HOOD, "body": BODY_HOOD, "arm": ARM_HOOD},   # エンダーパーカー
+    "ender_hoodie": {"head": HEAD_HOOD, "hat": HAT_HOOD, "body": BODY_HOOD, "arm": ARM_HOOD},   # エンダーパーカー
     "tee": {"head": HEAD, "hat": HAT, "body": BODY, "arm": ARM},                                # 白T（最初の服）
 }
 OUTFIT = "ender_hoodie"
@@ -262,14 +295,14 @@ PANTS = {
         "right": ["aaAa"] * 4 + ["cccc", "ssss", "yyyy", "TTTT", "yyyy", "TTTT", "oooo", "OOOO"],
         "left": ["AAAA"] * 4 + ["CCCC", "SSSS", "YYYY", "uuuu", "YYYY", "uuuu", "oooo", "OOOO"],
     },
-    # パーカーとおそろいのむらさき＋黒いくつ
+    # パーカーとおそろいのむらさき（ふちどり）＋つぶつぶの黒いくつ
     "ender": {
         "top": ["PPPP"] * 4,
         "bottom": ["KKKK"] * 4,
-        "front": ["PPPK"] * 10 + ["KKKK", "kkkk"],
-        "back": ["KPPP"] * 10 + ["KKKK", "kkkk"],
-        "right": ["PPPP"] * 10 + ["KKKK", "kkkk"],
-        "left": ["DDDD"] * 10 + ["KKKK", "kkkk"],
+        "front": ["KPPK"] * 10 + ["KVKv", "KKKK"],
+        "back": ["KPPK"] * 10 + ["vKVK", "KKKK"],
+        "right": ["KPPK"] * 10 + ["KvKV", "KKKK"],
+        "left": ["KDDK"] * 10 + ["VKvK", "KKKK"],
     },
     # 最初の濃いジーンズ＋スニーカー
     "jeans": {
@@ -284,25 +317,6 @@ PANTS = {
 # 右足だけに付けるワッペン：(面, 上からの行, 左からの列, ドット絵)
 PATCHES = {"rollup": ("front", 2, 0, [".y.", "yYy", ".y."])}
 PANTS_STYLE = "ender"
-
-
-def mirror(part: dict) -> dict:
-    """左右反転（右腕 → 左腕など）。"""
-    flip = lambda rows: [r[::-1] for r in rows]
-    return {"top": flip(part["top"]), "bottom": flip(part["bottom"]), "front": flip(part["front"]),
-            "back": flip(part["back"]), "right": flip(part["left"]), "left": flip(part["right"])}
-
-
-def paste(rows: list[str], patch: list[str], x0: int, y0: int) -> list[str]:
-    """ドット絵の上に小さなドット絵を重ねる（"." の所はそのまま）。"""
-    rows = list(rows)
-    for dy, pr in enumerate(patch):
-        r = list(rows[y0 + dy])
-        for dx, ch in enumerate(pr):
-            if ch != ".":
-                r[x0 + dx] = ch
-        rows[y0 + dy] = "".join(r)
-    return rows
 
 
 def legs(style: str) -> tuple[dict, dict]:
