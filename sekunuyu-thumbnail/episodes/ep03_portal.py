@@ -187,16 +187,13 @@ def portal_particles(img, cam: Camera, ss: int, seed=11):
 # ---------------------------------------------------------------- 文字入れ
 
 TEXT = {
-    "title1": "MINECRAFT",
-    "title2": "HARDCORE",
-    "badge": "セククラ NO.3",
     "hook1": "この先、",
     "hook2": "地獄。",
 }
 
 
 def compose(art: Image.Image, S: int) -> Image.Image:
-    """クリックされやすさ重視：左上に英字タイトル、フック（この先、地獄。）を大きく。"""
+    """クリックされやすさ重視：文字はフック（この先、地獄。）だけにして大きく。"""
     c = art.convert("RGBA")
     dark = ov.DARK
     # 下の方を少し暗くして、大きい文字を読みやすく
@@ -205,15 +202,6 @@ def compose(art: Image.Image, S: int) -> Image.Image:
     band = np.zeros((h, c.width, 4), np.uint8)
     band[..., 3] = grad.astype(np.uint8)[:, None]
     c.alpha_composite(Image.fromarray(band, "RGBA"))
-    # 左上：ひびの入った石の英字タイトル（A にクリーパーの顔、HARDCORE の O はハート）＋シリーズ名と番号
-    w1, _ = ov.logo_size(TEXT["title1"], 8 * S)
-    w2, _ = ov.logo_size(TEXT["title2"], 6 * S, heart_for="O")
-    b1 = ov.logo_title(c, (14 * S, 8 * S), TEXT["title1"], 8 * S, seed=2)
-    b2 = ov.logo_title(c, (b1[0] + (w1 - w2) // 2, b1[3] - 6 * S), TEXT["title2"], 6 * S,
-                       front=((246, 70, 56), (178, 22, 22)), side=(112, 12, 14), crack=(98, 12, 12),
-                       heart_for="O", seed=5)
-    ov.badge(c, (b2[2] + 6 * S, b2[1] + 3 * S), TEXT["badge"], ov.font(fonts.DELA, 32 * S), pad=(12 * S, 3 * S),
-             border=5 * S, radius=10 * S, rotate=4)
     # フック（大きく）
     hb1 = ov.fx_text(c, (26 * S, 548 * S), TEXT["hook1"], ov.font(fonts.BLACK, 104 * S), (255, 255, 255, 255),
                      strokes=[(13 * S, dark)], shadow=(6 * S, 8 * S, (40, 0, 30, 220), 3 * S), spacing=-6 * S)
