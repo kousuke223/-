@@ -23,6 +23,9 @@ PAL = {
     "w": "#FFFFFF", "k": "#14101A", "m": "#9A4A44",      # 白目・黒目・口
     "T": "#F7F7F7", "u": "#D9DCE6", "U": "#B9BDCB",      # 白T・影・濃い影
     "j": "#2E3F6E", "J": "#22305A",                      # ジーンズ・影
+    "a": "#6F93D6", "A": "#5577BC",                      # 明るいデニム・影
+    "c": "#B9CDF3", "C": "#93ADE2",                      # 折り返したすそ・影
+    "q": "#FFF8DE", "Q": "#FFE68C",                      # ギンガムチェックのクリーム色・うすい黄色
     "o": "#3C3C46", "O": "#E6E6EA",                      # くつ・くつ底
     "y": "#FFD23F", "Y": "#E08A1E", "L": "#FFF0A0",      # 黄色（ヘッドセット・たんぽぽ）・影・光
     "B": "#34364A",                                      # ヘッドセットのバンドとマイク
@@ -145,14 +148,51 @@ ARM = {   # 右腕（半そで）
     "left": ["uuuu", "uuuu", "uuuu", "UUUU"] + ["SSSS"] * 8,     # 体側（かげ）
 }
 
-LEG = {   # 右足（ジーンズ＋スニーカー）
-    "top": ["jjjj"] * 4,
-    "bottom": ["OOOO"] * 4,
-    "front": ["jjjJ"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
-    "back": ["Jjjj"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
-    "right": ["jjjj"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
-    "left": ["JJJJ"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],     # 内側（かげ）
+def gingham(h: int) -> list[str]:
+    """黄色のギンガムチェック（2ドットごと）。"""
+    return ["".join("y" if (y // 2) % 2 == 0 and (x // 2) % 2 == 0 else
+                    "Q" if (y // 2) % 2 == 0 or (x // 2) % 2 == 0 else "q" for x in range(4)) for y in range(h)]
+
+
+# ズボン（右足の形。左足は左右反転して作る）。どれを使うかは PANTS_STYLE で選ぶ
+PANTS = {
+    # 明るいデニムをロールアップ＋白ソックス＋黄色いスニーカー（右ひざにたんぽぽのワッペン）
+    "rollup": {
+        "top": ["aaaa"] * 4,
+        "bottom": ["TTTT"] * 4,
+        "front": ["aaaA"] * 6 + ["cccc", "CCCC", "TTTT", "yyyy", "yyyy", "TTTT"],
+        "back": ["Aaaa"] * 6 + ["cccc", "CCCC", "TTTT", "yyyy", "yyyy", "TTTT"],
+        "right": ["aaAa"] * 6 + ["cccc", "CCCC", "TTTT", "yyyy", "yyyy", "TTTT"],
+        "left": ["AAAA"] * 6 + ["CCCC", "CCCC", "uuuu", "YYYY", "YYYY", "uuuu"],    # 内側（かげ）
+    },
+    # 黄色のギンガムチェック＋白ソックス＋黒いスニーカー
+    "gingham": {
+        "top": ["qqqq"] * 4,
+        "bottom": ["OOOO"] * 4,
+        **{f: gingham(9) + ["TTTT", "oooo", "OOOO"] for f in ("front", "back", "right", "left")},
+    },
+    # デニムのショートパンツ＋黄色と白のボーダーソックス
+    "shorts": {
+        "top": ["aaaa"] * 4,
+        "bottom": ["OOOO"] * 4,
+        "front": ["aaaA"] * 4 + ["cccc", "ssss", "yyyy", "TTTT", "yyyy", "TTTT", "oooo", "OOOO"],
+        "back": ["Aaaa"] * 4 + ["cccc", "ssss", "yyyy", "TTTT", "yyyy", "TTTT", "oooo", "OOOO"],
+        "right": ["aaAa"] * 4 + ["cccc", "ssss", "yyyy", "TTTT", "yyyy", "TTTT", "oooo", "OOOO"],
+        "left": ["AAAA"] * 4 + ["CCCC", "SSSS", "YYYY", "uuuu", "YYYY", "uuuu", "oooo", "OOOO"],
+    },
+    # 最初の濃いジーンズ＋スニーカー
+    "jeans": {
+        "top": ["jjjj"] * 4,
+        "bottom": ["OOOO"] * 4,
+        "front": ["jjjJ"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
+        "back": ["Jjjj"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
+        "right": ["jjjj"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
+        "left": ["JJJJ"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
+    },
 }
+# 右足だけに付けるワッペン：(面, 上からの行, 左からの列, ドット絵)
+PATCHES = {"rollup": ("front", 2, 0, [".y.", "yYy", ".y."])}
+PANTS_STYLE = "rollup"
 
 
 def mirror(part: dict) -> dict:
@@ -162,8 +202,30 @@ def mirror(part: dict) -> dict:
             "back": flip(part["back"]), "right": flip(part["left"]), "left": flip(part["right"])}
 
 
-DESIGN = {"head": HEAD, "hat": HAT, "body": BODY, "arm": ARM, "arm_l": mirror(ARM), "leg": LEG,
-          "leg_l": mirror(LEG)}
+def paste(rows: list[str], patch: list[str], x0: int, y0: int) -> list[str]:
+    """ドット絵の上に小さなドット絵を重ねる（"." の所はそのまま）。"""
+    rows = list(rows)
+    for dy, pr in enumerate(patch):
+        r = list(rows[y0 + dy])
+        for dx, ch in enumerate(pr):
+            if ch != ".":
+                r[x0 + dx] = ch
+        rows[y0 + dy] = "".join(r)
+    return rows
+
+
+def legs(style: str) -> tuple[dict, dict]:
+    """右足と左足。ワッペンは右足だけ。"""
+    right = dict(PANTS[style])
+    left = mirror(right)
+    if style in PATCHES:
+        face, y0, x0, patch = PATCHES[style]
+        right[face] = paste(right[face], patch, x0, y0)
+    return right, left
+
+
+LEG_R, LEG_L = legs(PANTS_STYLE)
+DESIGN = {"head": HEAD, "hat": HAT, "body": BODY, "arm": ARM, "arm_l": mirror(ARM), "leg": LEG_R, "leg_l": LEG_L}
 
 
 def rgba(ch: str) -> tuple:
