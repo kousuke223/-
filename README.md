@@ -21,6 +21,9 @@
 [`sekunuyu-skin/`](sekunuyu-skin/) には、サムネイルのキャラ（黒髪・黄色いヘッドセット）のマイクラ用スキン（64×64、いまはエンダーマン風のパーカー）があります。
 ゲームでの変え方は [`sekunuyu-skin/README.md`](sekunuyu-skin/README.md) を見てください。
 
+[`sekunuyu-icon/`](sekunuyu-icon/) には、そのスキンのキャラで作った YouTube チャンネルアイコンの案（800×800、3種類）があります。
+設定のしかたは [`sekunuyu-icon/README.md`](sekunuyu-icon/README.md) を見てください。
+
 ## 名刺用QRコード
 
 `assets/qr-code.png` は GitHub Pages で公開した `profile.html`
