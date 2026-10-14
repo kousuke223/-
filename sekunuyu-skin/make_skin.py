@@ -40,13 +40,20 @@ PAL = {
 # 各パーツのスキン画像上の位置（左上）と大きさ（幅, 高さ, 奥行き）。Minecraft の決まりどおり
 PARTS = {
     "head": ((0, 0), (8, 8, 8)),
-    "hat": ((32, 0), (8, 8, 8)),
+    "hat": ((32, 0), (8, 8, 8)),         # 頭の2枚目（帽子レイヤー）
     "body": ((16, 16), (8, 12, 4)),
+    "jacket": ((16, 32), (8, 12, 4)),    # 体の2枚目（ジャケット）
     "arm": ((40, 16), (4, 12, 4)),       # 右腕
+    "sleeve": ((40, 32), (4, 12, 4)),    # 右腕の2枚目（そで）
     "arm_l": ((32, 48), (4, 12, 4)),
+    "sleeve_l": ((48, 48), (4, 12, 4)),
     "leg": ((0, 16), (4, 12, 4)),        # 右足
+    "pants": ((0, 32), (4, 12, 4)),      # 右足の2枚目（ズボン）
     "leg_l": ((16, 48), (4, 12, 4)),
+    "pants_l": ((0, 48), (4, 12, 4)),
 }
+# 2枚目のレイヤーは本体より少し大きく、浮いて見える（透明にしてよい所）
+OVERLAYS = {"hat", "jacket", "sleeve", "sleeve_l", "pants", "pants_l"}
 
 
 def face_rects(u, v, w, h, d):
@@ -61,6 +68,11 @@ def mirror(part: dict) -> dict:
     flip = lambda rows: [r[::-1] for r in rows]
     return {"top": flip(part["top"]), "bottom": flip(part["bottom"]), "front": flip(part["front"]),
             "back": flip(part["back"]), "right": flip(part["left"]), "left": flip(part["right"])}
+
+
+def empty(w: int, h: int, d: int) -> dict:
+    """何も描かない（全部透明の）2枚目のレイヤー。"""
+    return {f: ["." * fw] * fh for f, (_, _, fw, fh) in face_rects(0, 0, w, h, d).items()}
 
 
 def paste(rows: list[str], patch: list[str], x0: int, y0: int) -> list[str]:
@@ -224,41 +236,75 @@ HAT_HOOD = {
     "back": ender_tex(8, 8, 5),
 }
 
+# 体・腕は2枚目のレイヤーに服を描き、1枚目は内側（暗い色・ファスナー・手）にする。
+# 2枚目は本体より少し大きいので、そでが手より太く、ファスナーは服のすき間から一段へこんで見える
 BODY_HOOD = {
+    "top": ["DDDDDDDD"] * 4,
+    "bottom": ["KKKKKKKK"] * 4,
+    "front": [
+        "DDssssDD",
+        "DDDZZDDD",     # ファスナーの引き手
+        "DDDZZDDD",
+        "DDDzZDDD",
+        "DDDZzDDD",
+        "DDDzZDDD",
+        "DDDZzDDD",
+        "DDDzZDDD",
+        "DDDZzDDD",
+        "DDDzZDDD",
+        "DDDZzDDD",
+        "KKKKKKKK",
+    ],
+    "back": ["DDDDDDDD"] * 12,
+    "right": ["DDDD"] * 12,
+    "left": ["DDDD"] * 12,
+}
+
+JACKET_HOOD = {
     "top": ender_tex(8, 4, 6),
     "bottom": ["KKKKKKKK"] * 4,
     "front": [
-        "KPZssZPK",
-        "KPPZzPPK",
-        "KPPZZPPK",     # ファスナーの引き手
-        "KVPzZPPK",
-        "KPPZzPvK",
-        "KPPzZPPK",
-        "KPvZzPPK",
-        "KPPzZPVK",
-        "KPPZzPPK",
-        "KVPzZPPK",
-        "KPPZzPvK",
-        "KKKzZKKK",
+        "KP....PK",     # えりもと（V字にあいている）
+        "KPP..PPK",     # まん中はファスナーのすき間
+        "KVP..PPK",
+        "KPP..PvK",
+        "KPP..PPK",
+        "KPv..PPK",
+        "KPP..PVK",
+        "Kpp..ppK",     # ポケット
+        "KVp..pvK",
+        "Kpp..ppK",
+        "KKK..KKK",
+        "KKKKKKKK",     # すそ
     ],
     "back": ender_tex(8, 3, 7) + ["KPPPPPPK", "KPVPPPPK", "KPPPPvPK", "KPPPPPPK", "KvPPPPPK", "KPPPPVPK",
-                                   "KPPPPPPK", "KPPvPPPK", "KKKKKKKK"],
-    "right": ["PPPP", "PvPP", "PPPP", "PPVP", "PPPP", "PPPP", "PvPP", "PPPP", "PPPP", "PPPV", "PPPP", "KKKK"],
+                                   "KPPPPPPK", "KKKKKKKK", "KKKKKKKK"],
+    "right": ["PPPP", "PvPP", "PPPP", "PPVP", "PPPP", "PPPP", "PvPP", "PPPP", "PPPP", "PPPV", "KKKK", "KKKK"],
 }
-BODY_HOOD["left"] = [r[::-1] for r in BODY_HOOD["right"]]
+JACKET_HOOD["left"] = [r[::-1] for r in JACKET_HOOD["right"]]
 
-ARM_HOOD = {   # 右腕（長そで、ふちどり＋つぶつぶのそで口）
-    "top": ender_tex(4, 4, 8),
+ARM_HOOD = {   # 右腕の内側（手だけ見える）
+    "top": ["DDDD"] * 4,
     "bottom": ["SSSS"] * 4,
-    "front": ["KPPK"] * 10 + ["VKvK", "ssss"],
-    "back": ["KPPK"] * 10 + ["KvKV", "ssss"],
-    "right": ["KPPK"] * 10 + ["vKVK", "ssss"],
-    "left": ["KDDK"] * 10 + ["KVKv", "SSSS"],     # 体側（かげ）
+    "front": ["DDDD"] * 10 + ["ssss", "SSSS"],
+    "back": ["DDDD"] * 10 + ["ssss", "SSSS"],
+    "right": ["DDDD"] * 10 + ["ssss", "SSSS"],
+    "left": ["DDDD"] * 10 + ["SSSS", "SSSS"],
+}
+
+SLEEVE_HOOD = {   # 右腕のそで（ふちどり＋つぶつぶのそで口。下は手が出るようにあける）
+    "top": ender_tex(4, 4, 8),
+    "bottom": ["...."] * 4,
+    "front": ["KPPK"] * 9 + ["VKvK", "....", "...."],
+    "back": ["KPPK"] * 9 + ["KvKV", "....", "...."],
+    "right": ["KPPK"] * 9 + ["vKVK", "....", "...."],
+    "left": ["KDDK"] * 9 + ["KVKv", "....", "...."],     # 体側（かげ）
 }
 
 # 服の組み合わせ。どれを使うかは OUTFIT で選ぶ
 OUTFITS = {
-    "ender_hoodie": {"head": HEAD_HOOD, "hat": HAT_HOOD, "body": BODY_HOOD, "arm": ARM_HOOD},   # エンダーパーカー
+    "ender_hoodie": {"head": HEAD_HOOD, "hat": HAT_HOOD, "body": BODY_HOOD, "jacket": JACKET_HOOD,
+                     "arm": ARM_HOOD, "sleeve": SLEEVE_HOOD},                                  # エンダーパーカー
     "tee": {"head": HEAD, "hat": HAT, "body": BODY, "arm": ARM},                                # 白T（最初の服）
 }
 OUTFIT = "ender_hoodie"
@@ -296,14 +342,14 @@ PANTS = {
         "right": ["aaAa"] * 4 + ["cccc", "ssss", "yyyy", "TTTT", "yyyy", "TTTT", "oooo", "OOOO"],
         "left": ["AAAA"] * 4 + ["CCCC", "SSSS", "YYYY", "uuuu", "YYYY", "uuuu", "oooo", "OOOO"],
     },
-    # パーカーとおそろいのむらさき（ふちどり）＋つぶつぶの黒いくつ
+    # パーカーとおそろいのむらさき＋つぶつぶの黒いくつ（ズボンは2枚目のレイヤー → PANTS_OVER）
     "ender": {
-        "top": ["PPPP"] * 4,
+        "top": ["DDDD"] * 4,
         "bottom": ["KKKK"] * 4,
-        "front": ["KPPK"] * 10 + ["KVKv", "KKKK"],
-        "back": ["KPPK"] * 10 + ["vKVK", "KKKK"],
-        "right": ["KPPK"] * 10 + ["KvKV", "KKKK"],
-        "left": ["KDDK"] * 10 + ["VKvK", "KKKK"],
+        "front": ["DDDD"] * 10 + ["KVKv", "KKKK"],
+        "back": ["DDDD"] * 10 + ["vKVK", "KKKK"],
+        "right": ["DDDD"] * 10 + ["KvKV", "KKKK"],
+        "left": ["DDDD"] * 10 + ["VKvK", "KKKK"],
     },
     # 最初の濃いジーンズ＋スニーカー
     "jeans": {
@@ -315,26 +361,40 @@ PANTS = {
         "left": ["JJJJ"] * 8 + ["JJJJ", "oooo", "oooo", "OOOO"],
     },
 }
+# ズボンの2枚目のレイヤー（右足の形）。本体より少し太く、すそがくつにかぶさる
+PANTS_OVER = {
+    "ender": {
+        "top": ["PPPP"] * 4,
+        "bottom": ["...."] * 4,
+        "front": ["KPPK"] * 10 + ["....", "...."],
+        "back": ["KPPK"] * 10 + ["....", "...."],
+        "right": ["KPPK"] * 10 + ["....", "...."],
+        "left": ["KDDK"] * 10 + ["....", "...."],
+    },
+}
 # 右足だけに付けるワッペン：(面, 上からの行, 左からの列, ドット絵)
 PATCHES = {"rollup": ("front", 2, 0, [".y.", "yYy", ".y."])}
 PANTS_STYLE = "ender"
 
 
-def legs(style: str) -> tuple[dict, dict]:
-    """右足と左足。ワッペンは右足だけ。"""
+def legs(style: str) -> tuple[dict, dict, dict, dict]:
+    """右足・左足と、それぞれの2枚目のレイヤー。ワッペンは右足だけ。"""
     right = dict(PANTS[style])
     left = mirror(right)
     if style in PATCHES:
         face, y0, x0, patch = PATCHES[style]
         right[face] = paste(right[face], patch, x0, y0)
-    return right, left
+    over = PANTS_OVER.get(style, empty(4, 12, 4))
+    return right, left, over, mirror(over)
 
 
 def design(outfit: str, pants: str) -> dict:
     o = OUTFITS[outfit]
-    leg_r, leg_l = legs(pants)
-    return {"head": o["head"], "hat": o["hat"], "body": o["body"], "arm": o["arm"], "arm_l": mirror(o["arm"]),
-            "leg": leg_r, "leg_l": leg_l}
+    leg_r, leg_l, pants_r, pants_l = legs(pants)
+    sleeve = o.get("sleeve", empty(4, 12, 4))
+    return {"head": o["head"], "hat": o["hat"], "body": o["body"], "jacket": o.get("jacket", empty(8, 12, 4)),
+            "arm": o["arm"], "arm_l": mirror(o["arm"]), "sleeve": sleeve, "sleeve_l": mirror(sleeve),
+            "leg": leg_r, "leg_l": leg_l, "pants": pants_r, "pants_l": pants_l}
 
 
 DESIGN = design(OUTFIT, PANTS_STYLE)
@@ -354,7 +414,7 @@ def build_skin() -> np.ndarray:
             rows = DESIGN[name][face]
             assert len(rows) == fh and all(len(r) == fw for r in rows), (name, face)
             skin[y:y + fh, x:x + fw] = [[rgba(ch) for ch in r] for r in rows]
-            if name != "hat":   # 体の1枚目のレイヤーはすき間なく塗る（透明だとゲームで黒く見える）
+            if name not in OVERLAYS:   # 1枚目のレイヤーはすき間なく塗る（透明だとゲームで黒く見える）
                 assert (skin[y:y + fh, x:x + fw, 3] == 255).all(), (name, face)
     return skin
 

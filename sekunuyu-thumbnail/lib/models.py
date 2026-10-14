@@ -27,7 +27,8 @@ class Pose:
 def player(T, HS, item_tex, pos, pose: Pose, scale: float = 1.0, item_hand: str = "right",
            lights=None) -> tuple[list[Face], dict]:
     """プレイヤーの面のリストと、手や頭の位置（ワールド座標）を返す。
-    T に "arm_l" / "leg_l" があれば左の腕・足に使う（なければ右と同じ）。HS=None ならヘッドセットなし。"""
+    T に "arm_l" / "leg_l" があれば左の腕・足に使う（なければ右と同じ）。HS=None ならヘッドセットなし。
+    T に "jacket" / "sleeve" / "sleeve_l" / "pants" / "pants_l" があれば、スキンの2枚目のレイヤーとして重ねる。"""
     pos = np.asarray(pos, float)
     Rr = rot_y(pose.yaw) @ rot_x(pose.lean)
     k = PX * scale
@@ -41,19 +42,29 @@ def player(T, HS, item_tex, pos, pose: Pose, scale: float = 1.0, item_hand: str 
         faces.extend(box_faces(np.asarray(size, float) * k, tex, M=M, t=t, origin=np.asarray(origin, float) * k, **kw))
         return M, t
 
+    def layer(name, size, pivot, origin, Rl, base=None):
+        """2枚目のレイヤー（ジャケット・そで・ズボン）。本体より 0.25 ピクセルずつ外側に重ねる。"""
+        if name in T:
+            part(tuple(s + 0.5 for s in size), pivot, tuple(o - 0.25 for o in origin), Rl, T[name], base=base)
+
     # 足
     part((4, 12, 4), (-2, 12, 0), (-2, -12, -2), rot_x(pose.leg_r), T["leg"])
+    layer("pants", (4, 12, 4), (-2, 12, 0), (-2, -12, -2), rot_x(pose.leg_r))
     part((4, 12, 4), (2, 12, 0), (-2, -12, -2), rot_x(pose.leg_l), T.get("leg_l", T["leg"]))
+    layer("pants_l", (4, 12, 4), (2, 12, 0), (-2, -12, -2), rot_x(pose.leg_l))
     # 胴体（腰を中心にひねる）
     Rt = rot_y(pose.twist)
     Mb, tb = part((8, 12, 4), (0, 12, 0), (-4, 0, -2), Rt, T["body"])
+    layer("jacket", (8, 12, 4), (0, 12, 0), (-4, 0, -2), Rt)
     upper = (Mb, tb)
     # 腕（肩から）
     # 肩：まず外に開いてから前後に振る（右腕は -x 側なので開く向きが逆）
     Ra_r = rot_x(pose.arm_r[0]) @ rot_z(-pose.arm_r[1])
     Ra_l = rot_x(pose.arm_l[0]) @ rot_z(pose.arm_l[1])
     Mr, tr = part((4, 12, 4), (-6, 10, 0), (-2, -10, -2), Ra_r, T["arm"], base=upper)
+    layer("sleeve", (4, 12, 4), (-6, 10, 0), (-2, -10, -2), Ra_r, base=upper)
     Ml, tl = part((4, 12, 4), (6, 10, 0), (-2, -10, -2), Ra_l, T.get("arm_l", T["arm"]), base=upper)
+    layer("sleeve_l", (4, 12, 4), (6, 10, 0), (-2, -10, -2), Ra_l, base=upper)
     # 頭（首から）
     Rh = rot_y(pose.head_yaw) @ rot_x(-pose.head_pitch) @ rot_z(pose.head_roll)
     Mh, th = part((8, 8, 8), (0, 12, 0), (-4, 0, -4), Rh, T["head"], base=upper)
