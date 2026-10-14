@@ -166,26 +166,6 @@ FACE_SCREAM = [
     "sssssmmrrmmsssss",
 ]
 
-# ゴクリ…（目を見開いて、口は小さく「お」の字、汗たらり）
-FACE_GULP = [
-    "hhhhhhhhhhhhhhhh",
-    "hhHhhhhhhhhhHhhh",
-    "hhhhhhhhhhhhhhhh",
-    "shhhhhshhhhhhhhs",
-    "ssspssspssspsssd",
-    "sssbbssssssbbssD",
-    "sbbsssssssssssbb",
-    "swwwwssssswwwwss",
-    "swwwwssssswwwwss",
-    "swkwwssSssswkwss",
-    "swwwwssSsswwwwss",
-    "ssssssssssssssss",
-    "sssssmmmmmmsssss",
-    "sssssmmrrmmsssss",
-    "ssssssmmmmssssss",
-    "ssssssssssssssss",
-]
-
 HEAD_SIDE = [
     "hhhhhhhhhhhhhhhh",
     "hhhHhhhhhhhhhhhh",

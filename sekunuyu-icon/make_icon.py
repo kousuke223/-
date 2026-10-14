@@ -25,6 +25,7 @@ from lib import overlay as ov  # noqa: E402
 from lib.fonts import BLACK, ensure_fonts  # noqa: E402
 from lib.models import Pose, player  # noqa: E402
 from lib.post import tonemap  # noqa: E402
+from lib.skin import load_skin, skin_textures  # noqa: E402
 from lib.voxel import Camera, Lights, render  # noqa: E402
 
 SIZE = 800
@@ -34,8 +35,7 @@ PURPLE = [(120, 70, 190), (40, 22, 70)]
 SPARK = [(194, 91, 255), (123, 59, 181), (236, 190, 255)]
 
 
-def load_skin() -> np.ndarray:
-    return np.asarray(Image.open(os.path.join(ROOT, "sekunuyu-skin", "sekunuyu_skin.png")).convert("RGBA"))
+SKIN = os.path.join(ROOT, "sekunuyu-skin", "sekunuyu_skin.png")
 
 
 # ---------------------------------------------------------------- 背景
@@ -211,8 +211,8 @@ def options_sheet(icons: dict) -> Image.Image:
 
 def main():
     ensure_fonts()
-    skin = load_skin()
-    T = make_skin.skin_to_textures(skin)
+    skin = load_skin(SKIN)
+    T = skin_textures(skin)
     out = os.path.join(HERE, "output")
     os.makedirs(out, exist_ok=True)
     icons = {"A": icon_a(T), "B": icon_b(T), "C": icon_c(skin)}
