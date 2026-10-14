@@ -10,10 +10,12 @@ FONT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 FONTS = {
     "NotoSansJP-Black.ttf": "Noto+Sans+JP:wght@900",
     "DelaGothicOne-Regular.ttf": "Dela+Gothic+One",
+    "PressStart2P-Regular.ttf": "Press+Start+2P",
 }
 
 BLACK = os.path.join(FONT_DIR, "NotoSansJP-Black.ttf")
 DELA = os.path.join(FONT_DIR, "DelaGothicOne-Regular.ttf")
+PIXEL = os.path.join(FONT_DIR, "PressStart2P-Regular.ttf")   # 英字のブロック文字の元にするドットフォント
 
 
 def ensure_fonts() -> None:

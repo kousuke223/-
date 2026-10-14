@@ -187,16 +187,16 @@ def portal_particles(img, cam: Camera, ss: int, seed=11):
 # ---------------------------------------------------------------- 文字入れ
 
 TEXT = {
-    "series1": "セククラ",
-    "series2": "ハードコア",
-    "badge": "NO.3",
+    "title1": "MINECRAFT",
+    "title2": "HARDCORE",
+    "badge": "セククラ NO.3",
     "hook1": "この先、",
     "hook2": "地獄。",
 }
 
 
 def compose(art: Image.Image, S: int) -> Image.Image:
-    """クリックされやすさ重視：シリーズ名は小さく左上、フック（この先、地獄。）を大きく。"""
+    """クリックされやすさ重視：左上に英字タイトル、フック（この先、地獄。）を大きく。"""
     c = art.convert("RGBA")
     dark = ov.DARK
     # 下の方を少し暗くして、大きい文字を読みやすく
@@ -205,16 +205,11 @@ def compose(art: Image.Image, S: int) -> Image.Image:
     band = np.zeros((h, c.width, 4), np.uint8)
     band[..., 3] = grad.astype(np.uint8)[:, None]
     c.alpha_composite(Image.fromarray(band, "RGBA"))
-    # シリーズ名（小さめ）＋番号
-    shadow = (4 * S, 5 * S, (0, 0, 0, 170), 3 * S)
-    f = ov.font(fonts.BLACK, 70 * S)
-    b1 = ov.fx_text(c, (20 * S, 8 * S), TEXT["series1"], f,
-                    [(0, (255, 240, 120)), (0.5, (255, 206, 40)), (1, (255, 138, 18))],
-                    strokes=[(11 * S, dark), (6 * S, (214, 28, 28, 255))], shadow=shadow, spacing=-3 * S)
-    b2 = ov.fx_text(c, (b1[2] + 2 * S, 8 * S), TEXT["series2"], f,
-                    [(0, (255, 92, 70)), (0.55, (236, 28, 30)), (1, (176, 10, 16))],
-                    strokes=[(11 * S, dark), (6 * S, (255, 255, 255, 255))], shadow=shadow, spacing=-3 * S)
-    ov.badge(c, (b2[2] + 6 * S, 18 * S), TEXT["badge"], ov.font(fonts.DELA, 46 * S), pad=(14 * S, 4 * S),
+    # 左上：石ブロックで組んだ英字タイトル＋シリーズ名と番号
+    b1 = ov.block_title(c, (16 * S, 10 * S), TEXT["title1"], fonts.PIXEL, 8 * S, extrude=7 * S, outline_w=4 * S)
+    b2 = ov.block_title(c, (16 * S, b1[3] + 3 * S), TEXT["title2"], fonts.PIXEL, 6 * S, colors=ov.RED_STONE,
+                        extrude=5 * S, outline_w=3 * S, side=(90, 16, 20), seed=3)
+    ov.badge(c, (b2[2] + 10 * S, b2[1] + 2 * S), TEXT["badge"], ov.font(fonts.DELA, 38 * S), pad=(14 * S, 4 * S),
              border=6 * S, radius=12 * S, rotate=4)
     # フック（大きく）
     hb1 = ov.fx_text(c, (26 * S, 548 * S), TEXT["hook1"], ov.font(fonts.BLACK, 104 * S), (255, 255, 255, 255),

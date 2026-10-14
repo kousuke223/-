@@ -216,3 +216,68 @@ def arrow(c: Image.Image, start, end, width: int, head_len: int, head_w: int, fi
     layer.paste(Image.new("RGBA", mask.size, stroke), (0, 0), white)
     layer.paste(Image.new("RGBA", mask.size, fill), (0, 0), mask)
     c.alpha_composite(layer, (max(0, x0), max(0, y0)), (max(0, -x0), max(0, -y0)))
+
+
+STONE = [(118, 118, 122), (134, 134, 138), (150, 150, 154), (168, 168, 172)]
+RED_STONE = [(150, 26, 30), (176, 36, 38), (204, 52, 48), (228, 78, 64)]
+
+
+def block_title(c: Image.Image, xy, text: str, font_path: str, cell: int, colors=STONE, extrude: int = 0,
+                outline_w: int = 0, side=(52, 52, 58), outline=(16, 16, 20, 255), seed: int = 0) -> tuple:
+    """ドット1つを石ブロック1個にして組んだ英字（マイクラ風の立体タイトル）。xy は左上。戻り値は描いた範囲。"""
+    from scipy import ndimage as ndi
+    f = ImageFont.truetype(font_path, 8)
+    bb = f.getbbox(text)
+    im = Image.new("L", (bb[2] - bb[0] + 4, bb[3] - bb[1] + 4), 0)
+    d = ImageDraw.Draw(im)
+    d.fontmode = "1"
+    d.text((2 - bb[0], 2 - bb[1]), text, font=f, fill=255)
+    bm = np.asarray(im) > 0
+    ys, xs = np.nonzero(bm)
+    bm = bm[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    h, w = bm.shape
+    rng = np.random.default_rng(seed)
+    # 石の模様（ブロックごとに少し明るさを変えて、細かいつぶつぶを入れる）
+    sub = max(2, cell // 4)
+    speck = rng.random((h * cell // sub + 1, w * cell // sub + 1)).repeat(sub, 0).repeat(sub, 1)[:h * cell, :w * cell]
+    pal = np.array(colors, float)
+    face = pal[np.clip((speck * len(pal)).astype(int), 0, len(pal) - 1)]
+    face *= (0.9 + 0.2 * rng.random((h, w))).repeat(cell, 0).repeat(cell, 1)[..., None]
+    # ブロックのふち（上と左は明るく、下と右は暗く）
+    yy, xx = np.mgrid[0:h * cell, 0:w * cell]
+    by, bx = yy % cell, xx % cell
+    bev = max(1, cell // 6)
+    face = np.where(((by < bev) | (bx < bev))[..., None], np.minimum(face * 1.1 + 8, 255), face)
+    face = np.where(((by >= cell - bev) | (bx >= cell - bev))[..., None], face * 0.84, face)
+    face *= np.linspace(1.12, 0.86, h * cell)[:, None, None]   # 上が明るい
+    face = np.clip(face, 0, 255)
+    on = bm.repeat(cell, 0).repeat(cell, 1)
+    E, O = extrude, outline_w
+    Hc, Wc = h * cell + E + 2 * O, w * cell + 2 * O
+    sil = np.zeros((Hc, Wc), bool)
+    sil[O:O + h * cell, O:O + w * cell] = on
+    ext = sil.copy()
+    for k in range(1, E + 1):  # 下に厚みを出す
+        ext[k:] |= sil[:-k]
+    outl = ndi.binary_dilation(ext, structure=np.ones((3, 3), bool), iterations=O) if O else ext
+    arr = np.zeros((Hc, Wc, 4), np.uint8)
+    arr[outl] = outline
+    sidek = np.linspace(1.15, 0.7, Hc)[:, None, None]
+    side_rgb = np.clip(np.array(side, float)[None, None, :] * sidek, 0, 255)
+    side_mask = ext & ~sil
+    arr[..., :3][side_mask] = np.broadcast_to(side_rgb, (Hc, Wc, 3))[side_mask].astype(np.uint8)
+    arr[..., 3][side_mask] = 255
+    fm = np.zeros((Hc, Wc, 3), float)
+    fm[O:O + h * cell, O:O + w * cell] = face
+    arr[..., :3][sil] = fm[sil].astype(np.uint8)
+    arr[..., 3][sil] = 255
+    layer = Image.fromarray(arr, "RGBA")
+    # やわらかい影
+    m = 4 * max(1, O)
+    sh = Image.new("RGBA", (Wc + 2 * m, Hc + 2 * m), (0, 0, 0, 0))
+    sh.paste(Image.new("RGBA", (Wc, Hc), (0, 0, 0, 160)), (m, m), Image.fromarray((outl * 255).astype(np.uint8)))
+    sh = sh.filter(ImageFilter.GaussianBlur(m / 2))
+    x, y = int(xy[0]), int(xy[1])
+    c.alpha_composite(sh, (max(0, x - m + O), max(0, y - m + 2 * O)))
+    c.alpha_composite(layer, (x, y))
+    return (x, y, x + Wc, y + Hc)
