@@ -187,7 +187,7 @@ HEAD_HOOD = dict(HEAD, front=[
     "hhhhhhhh",
     "hhhhhhhh",
     "hssssssh",
-    "hhhhsssh",     # フードの下から、ななめに流した前髪がのぞく
+    "ssssssss",     # フードの下はおでこ（前髪はフードの中）
     "swksskws",
     "swksskws",
     "ssssssss",
