@@ -18,6 +18,9 @@
 [`sekunuyu-thumbnail/`](sekunuyu-thumbnail/) にはマイクラ ハードコア実況（#2・#3）のサムネイルと、
 それを作るスクリプトがあります（[`sekunuyu-thumbnail/README.md`](sekunuyu-thumbnail/README.md)）。
 
+[`sekunuyu-skin/`](sekunuyu-skin/) には、サムネイルのキャラと同じ見た目のマイクラ用スキン（64×64）があります。
+ゲームでの変え方は [`sekunuyu-skin/README.md`](sekunuyu-skin/README.md) を見てください。
+
 ## 名刺用QRコード
 
 `assets/qr-code.png` は GitHub Pages で公開した `profile.html`
