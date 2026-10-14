@@ -218,66 +218,165 @@ def arrow(c: Image.Image, start, end, width: int, head_len: int, head_w: int, fi
     c.alpha_composite(layer, (max(0, x0), max(0, y0)), (max(0, -x0), max(0, -y0)))
 
 
-STONE = [(118, 118, 122), (134, 134, 138), (150, 150, 154), (168, 168, 172)]
-RED_STONE = [(150, 26, 30), (176, 36, 38), (204, 52, 48), (228, 78, 64)]
+# ---------------------------------------------------------------- マイクラ風のロゴ文字（ひびの入った石＋厚み＋黒フチ）
+
+# 1マス単位の太いブロック文字（高さ 8 マス・線の太さ 2 マス）。A は上を四角くして、そこにクリーパーの顔を描く
+LOGO_LETTERS = {
+    "M": ["##......##", "###....###", "####..####", "##.####.##", "##..##..##", "##......##", "##......##",
+          "##......##"],
+    "I": ["##"] * 8,
+    "N": ["##....##", "###...##", "####..##", "##.##.##", "##..####", "##...###", "##....##", "##....##"],
+    "E": ["#######", "#######", "##.....", "######.", "######.", "##.....", "#######", "#######"],
+    "C": [".######", "#######", "##.....", "##.....", "##.....", "##.....", "#######", ".######"],
+    "R": ["######.", "#######", "##...##", "#######", "######.", "##..##.", "##...##", "##...##"],
+    "A": [".#######.", "#########", "#########", "#########", "#########", "#########", "##.....##",
+          "##.....##"],
+    "F": ["#######", "#######", "##.....", "######.", "######.", "##.....", "##.....", "##....."],
+    "T": ["########", "########", "...##...", "...##...", "...##...", "...##...", "...##...", "...##..."],
+    "H": ["##...##", "##...##", "##...##", "#######", "#######", "##...##", "##...##", "##...##"],
+    "D": ["######.", "#######", "##...##", "##...##", "##...##", "##...##", "#######", "######."],
+    "O": [".#####.", "#######", "##...##", "##...##", "##...##", "##...##", "#######", ".#####."],
+}
+# クリーパーの顔（6×6）
+LOGO_CREEPER = ["##..##", "##..##", "..##..", ".####.", ".####.", ".#..#."]
+# ハードコアのハート（9×8）。r=赤 R=濃い赤 w=光 p=うすい赤 d=ハードコアの黒い目
+LOGO_HEART = [
+    ".rrr.rrr.",
+    "rwwprrrrr",
+    "rwprrrrrR",
+    "rrdrrrdRR",
+    ".rrrrrRR.",
+    "..rrrRR..",
+    "...rRR...",
+    "....R....",
+]
+LOGO_HEART_COLORS = {"r": (236, 30, 42), "R": (150, 8, 26), "w": (255, 240, 240), "p": (255, 128, 136),
+                     "d": (54, 4, 12)}
 
 
-def block_title(c: Image.Image, xy, text: str, font_path: str, cell: int, colors=STONE, extrude: int = 0,
-                outline_w: int = 0, side=(52, 52, 58), outline=(16, 16, 20, 255), seed: int = 0) -> tuple:
-    """ドット1つを石ブロック1個にして組んだ英字（マイクラ風の立体タイトル）。xy は左上。戻り値は描いた範囲。"""
+def _shift(m: np.ndarray, dy: int, dx: int) -> np.ndarray:
+    """配列を (dy, dx) だけずらす（はみ出た所は 0）。"""
+    out = np.zeros_like(m)
+    H, W = m.shape[:2]
+    out[max(0, dy):H + min(0, dy), max(0, dx):W + min(0, dx)] = \
+        m[max(0, -dy):H - max(0, dy), max(0, -dx):W - max(0, dx)]
+    return out
+
+
+def _logo_cracks(stone: np.ndarray, u: int, n: int, rng) -> tuple[np.ndarray, np.ndarray]:
+    """石の面に入れるひび（枝分かれする折れ線）。戻り値：ひびの線・そのすぐ下の明るい線"""
+    H, W = stone.shape
+    dark, light = Image.new("L", (W, H), 0), Image.new("L", (W, H), 0)
+    dd, dl = ImageDraw.Draw(dark), ImageDraw.Draw(light)
+    lw = max(2, round(u / 5))
+    ys, xs = np.nonzero(stone)
+
+    def walk(x, y, ang, steps):
+        pts = [(x, y)]
+        for _ in range(steps):
+            ang += rng.uniform(-0.9, 0.9)
+            x, y = x + np.cos(ang) * rng.uniform(0.45, 0.9) * u, y + np.sin(ang) * rng.uniform(0.45, 0.9) * u
+            pts.append((x, y))
+            if rng.random() < 0.3:
+                walk(x, y, ang + rng.choice([-1.2, 1.2]), int(rng.integers(1, 3)))
+        dd.line(pts, fill=255, width=lw)
+        dl.line([(px, py + lw) for px, py in pts], fill=255, width=max(1, lw // 2))
+
+    for _ in range(n):
+        j = rng.integers(len(xs))
+        walk(float(xs[j]), float(ys[j]), rng.uniform(0, 2 * np.pi), int(rng.integers(3, 6)))
+    cr = (np.asarray(dark) > 0) & stone
+    return cr, (np.asarray(light) > 0) & stone & ~cr
+
+
+def logo_size(word: str, unit: int, depth: float = 1.7, outline_w: float = 0.5,
+              heart_for: str | None = None) -> tuple[int, int]:
+    """logo_title で描く範囲の大きさ (幅, 高さ)。"""
+    E, O = int(round(depth * unit)), max(2, int(np.ceil(outline_w * unit)))
+    cols = sum(len((LOGO_HEART if ch == heart_for else LOGO_LETTERS[ch])[0]) for ch in word) + len(word) - 1
+    return cols * unit + 2 * O, 8 * unit + E + 2 * O
+
+
+def logo_title(c: Image.Image, xy, word: str, unit: int, front=((218, 214, 208), (156, 152, 148)),
+               side=(92, 88, 86), crack=(66, 62, 60), outline=(14, 12, 14, 255), depth: float = 1.7,
+               outline_w: float = 0.5, heart_for: str | None = None, creeper_in: str | None = "A",
+               seed: int = 0) -> tuple:
+    """マイクラ風のロゴ文字：ひびの入った石の太いブロック文字＋下向きの厚み＋黒フチ。unit は1マスの大きさ(px)。
+    heart_for の文字はハートに置きかえ、creeper_in の文字にはクリーパーの顔を描く。戻り値は描いた範囲。"""
     from scipy import ndimage as ndi
-    f = ImageFont.truetype(font_path, 8)
-    bb = f.getbbox(text)
-    im = Image.new("L", (bb[2] - bb[0] + 4, bb[3] - bb[1] + 4), 0)
-    d = ImageDraw.Draw(im)
-    d.fontmode = "1"
-    d.text((2 - bb[0], 2 - bb[1]), text, font=f, fill=255)
-    bm = np.asarray(im) > 0
-    ys, xs = np.nonzero(bm)
-    bm = bm[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
-    h, w = bm.shape
+    u = unit
     rng = np.random.default_rng(seed)
-    # 石の模様（ブロックごとに少し明るさを変えて、細かいつぶつぶを入れる）
-    sub = max(2, cell // 4)
-    speck = rng.random((h * cell // sub + 1, w * cell // sub + 1)).repeat(sub, 0).repeat(sub, 1)[:h * cell, :w * cell]
-    pal = np.array(colors, float)
-    face = pal[np.clip((speck * len(pal)).astype(int), 0, len(pal) - 1)]
-    face *= (0.9 + 0.2 * rng.random((h, w))).repeat(cell, 0).repeat(cell, 1)[..., None]
-    # ブロックのふち（上と左は明るく、下と右は暗く）
-    yy, xx = np.mgrid[0:h * cell, 0:w * cell]
-    by, bx = yy % cell, xx % cell
-    bev = max(1, cell // 6)
-    face = np.where(((by < bev) | (bx < bev))[..., None], np.minimum(face * 1.1 + 8, 255), face)
-    face = np.where(((by >= cell - bev) | (bx >= cell - bev))[..., None], face * 0.84, face)
-    face *= np.linspace(1.12, 0.86, h * cell)[:, None, None]   # 上が明るい
-    face = np.clip(face, 0, 255)
-    on = bm.repeat(cell, 0).repeat(cell, 1)
-    E, O = extrude, outline_w
-    Hc, Wc = h * cell + E + 2 * O, w * cell + 2 * O
-    sil = np.zeros((Hc, Wc), bool)
-    sil[O:O + h * cell, O:O + w * cell] = on
-    ext = sil.copy()
-    for k in range(1, E + 1):  # 下に厚みを出す
-        ext[k:] |= sil[:-k]
-    outl = ndi.binary_dilation(ext, structure=np.ones((3, 3), bool), iterations=O) if O else ext
+    E, O = int(round(depth * u)), max(2, int(np.ceil(outline_w * u)))
+    glyphs = [LOGO_HEART if ch == heart_for else LOGO_LETTERS[ch] for ch in word]
+    Wc, Hc = logo_size(word, u, depth, outline_w, heart_for)
+    # 文字を 1 マスずつあけて並べる
+    face = np.zeros((Hc, Wc), bool)
+    heart = np.zeros((Hc, Wc), bool)
+    heart_rgb = np.zeros((Hc, Wc, 3), np.uint8)
+    creeper = np.zeros((Hc, Wc), bool)
+    x = O
+    for ch, g in zip(word, glyphs):
+        w = len(g[0])
+        for r, row in enumerate(g):
+            for q, p in enumerate(row):
+                if p == ".":
+                    continue
+                cell = (slice(O + r * u, O + (r + 1) * u), slice(x + q * u, x + (q + 1) * u))
+                face[cell] = True
+                if g is LOGO_HEART:
+                    heart[cell] = True
+                    heart_rgb[cell] = LOGO_HEART_COLORS[p]
+        if ch == creeper_in:   # 上の四角い所（6 マス）のまん中に顔
+            f = max(2, int(round(0.8 * u)))
+            cx, cy = x + (w * u - 6 * f) // 2, O + (6 * u - 6 * f) // 2
+            pat = np.array([[p == "#" for p in row] for row in LOGO_CREEPER])
+            creeper[cy:cy + 6 * f, cx:cx + 6 * f] = pat.repeat(f, 0).repeat(f, 1)
+        x += (w + 1) * u
+    # 下向きの厚み（面からの距離もおぼえておく）と黒フチ
+    ext = face.copy()
+    dist = np.zeros((Hc, Wc))
+    for k in range(1, E + 1):
+        s = _shift(face, k, 0)
+        dist[s & ~ext] = k
+        ext |= s
+    outl = ndi.binary_dilation(ext, structure=np.ones((3, 3), bool), iterations=O)
     arr = np.zeros((Hc, Wc, 4), np.uint8)
     arr[outl] = outline
-    sidek = np.linspace(1.15, 0.7, Hc)[:, None, None]
-    side_rgb = np.clip(np.array(side, float)[None, None, :] * sidek, 0, 255)
-    side_mask = ext & ~sil
-    arr[..., :3][side_mask] = np.broadcast_to(side_rgb, (Hc, Wc, 3))[side_mask].astype(np.uint8)
-    arr[..., 3][side_mask] = 255
-    fm = np.zeros((Hc, Wc, 3), float)
-    fm[O:O + h * cell, O:O + w * cell] = face
-    arr[..., :3][sil] = fm[sil].astype(np.uint8)
-    arr[..., 3][sil] = 255
-    layer = Image.fromarray(arr, "RGBA")
+    sm = ext & ~face
+    side_rgb = np.array(side, float)[None, None, :] * (1.0 - 0.55 * dist / max(1, E))[..., None]
+    arr[sm, :3] = np.clip(side_rgb[sm], 0, 255).astype(np.uint8)
+    arr[sm, 3] = 255
+    # 正面：上から下へのグラデーション＋ドット絵っぽいざらつき＋大きなまだら
+    t = np.clip((np.arange(Hc, dtype=float) - O) / (8 * u), 0, 1)[:, None, None]
+    col = np.broadcast_to(np.array(front[0], float) * (1 - t) + np.array(front[1], float) * t, (Hc, Wc, 3)).copy()
+    tx = max(2, u // 4)
+    speck = rng.random((Hc // tx + 1, Wc // tx + 1)).repeat(tx, 0).repeat(tx, 1)[:Hc, :Wc]
+    col *= (0.93 + 0.1 * np.floor(speck * 4) / 3)[..., None]
+    blot = Image.fromarray((rng.random((Hc // (2 * u) + 2, Wc // (2 * u) + 2)) * 255).astype(np.uint8))
+    col *= (0.94 + 0.1 * np.asarray(blot.resize((Wc, Hc), Image.BILINEAR), float) / 255)[..., None]
+    # ふちの面取り（上と左は明るく、右と下は暗く）
+    b = max(2, u // 5)
+    col[face & ~_shift(face, 0, b)] *= 1.06
+    col[face & ~_shift(face, 0, -b)] *= 0.88
+    col[face & ~_shift(face, -b, 0)] *= 0.76
+    top = face & ~_shift(face, b, 0)
+    col[top] = col[top] * 1.14 + 14
+    # ひび
+    cr, cl = _logo_cracks(face & ~heart & ~creeper, u, len(word) + 2, rng)
+    col[cl] = col[cl] * 1.16 + 18
+    col[cr] = crack
+    arr[face, :3] = np.clip(col[face], 0, 255).astype(np.uint8)
+    arr[face, 3] = 255
+    arr[heart, :3] = heart_rgb[heart]
+    arr[creeper, :3] = (18, 20, 18)
+    img = Image.fromarray(arr, "RGBA")
     # やわらかい影
-    m = 4 * max(1, O)
+    m = 3 * O
     sh = Image.new("RGBA", (Wc + 2 * m, Hc + 2 * m), (0, 0, 0, 0))
-    sh.paste(Image.new("RGBA", (Wc, Hc), (0, 0, 0, 160)), (m, m), Image.fromarray((outl * 255).astype(np.uint8)))
+    sh.paste(Image.new("RGBA", (Wc, Hc), (0, 0, 0, 170)), (m, m), Image.fromarray((outl * 255).astype(np.uint8)))
     sh = sh.filter(ImageFilter.GaussianBlur(m / 2))
     x, y = int(xy[0]), int(xy[1])
-    c.alpha_composite(sh, (max(0, x - m + O), max(0, y - m + 2 * O)))
-    c.alpha_composite(layer, (x, y))
+    sx, sy = x - m + O, y - m + 2 * O
+    c.alpha_composite(sh, (max(0, sx), max(0, sy)), (max(0, -sx), max(0, -sy)))
+    c.alpha_composite(img, (x, y))
     return (x, y, x + Wc, y + Hc)

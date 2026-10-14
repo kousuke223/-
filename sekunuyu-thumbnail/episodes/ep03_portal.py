@@ -205,12 +205,15 @@ def compose(art: Image.Image, S: int) -> Image.Image:
     band = np.zeros((h, c.width, 4), np.uint8)
     band[..., 3] = grad.astype(np.uint8)[:, None]
     c.alpha_composite(Image.fromarray(band, "RGBA"))
-    # 左上：石ブロックで組んだ英字タイトル＋シリーズ名と番号
-    b1 = ov.block_title(c, (16 * S, 10 * S), TEXT["title1"], fonts.PIXEL, 8 * S, extrude=7 * S, outline_w=4 * S)
-    b2 = ov.block_title(c, (16 * S, b1[3] + 3 * S), TEXT["title2"], fonts.PIXEL, 6 * S, colors=ov.RED_STONE,
-                        extrude=5 * S, outline_w=3 * S, side=(90, 16, 20), seed=3)
-    ov.badge(c, (b2[2] + 10 * S, b2[1] + 2 * S), TEXT["badge"], ov.font(fonts.DELA, 38 * S), pad=(14 * S, 4 * S),
-             border=6 * S, radius=12 * S, rotate=4)
+    # 左上：ひびの入った石の英字タイトル（A にクリーパーの顔、HARDCORE の O はハート）＋シリーズ名と番号
+    w1, _ = ov.logo_size(TEXT["title1"], 8 * S)
+    w2, _ = ov.logo_size(TEXT["title2"], 6 * S, heart_for="O")
+    b1 = ov.logo_title(c, (14 * S, 8 * S), TEXT["title1"], 8 * S, seed=2)
+    b2 = ov.logo_title(c, (b1[0] + (w1 - w2) // 2, b1[3] - 6 * S), TEXT["title2"], 6 * S,
+                       front=((246, 70, 56), (178, 22, 22)), side=(112, 12, 14), crack=(98, 12, 12),
+                       heart_for="O", seed=5)
+    ov.badge(c, (b2[2] + 6 * S, b2[1] + 3 * S), TEXT["badge"], ov.font(fonts.DELA, 32 * S), pad=(12 * S, 3 * S),
+             border=5 * S, radius=10 * S, rotate=4)
     # フック（大きく）
     hb1 = ov.fx_text(c, (26 * S, 548 * S), TEXT["hook1"], ov.font(fonts.BLACK, 104 * S), (255, 255, 255, 255),
                      strokes=[(13 * S, dark)], shadow=(6 * S, 8 * S, (40, 0, 30, 220), 3 * S), spacing=-6 * S)
