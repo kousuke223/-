@@ -21,6 +21,7 @@ PAL = {
     "h": "#1C1820", "H": "#3E3848", "g": "#2B2533",      # 髪・つや・ふち
     "s": "#F2C29B", "S": "#D9A07A", "n": "#C98A66",      # はだ・影・耳
     "w": "#FFFFFF", "k": "#14101A", "m": "#9A4A44",      # 白目・黒目・口
+    "b": "#6A4330",                                      # まゆ毛（ちょっと茶色）
     "T": "#F7F7F7", "u": "#D9DCE6", "U": "#B9BDCB",      # 白T・影・濃い影
     "j": "#2E3F6E", "J": "#22305A",                      # ジーンズ・影
     "a": "#6F93D6", "A": "#5577BC",                      # 明るいデニム・影
@@ -187,7 +188,7 @@ HEAD_HOOD = dict(HEAD, front=[
     "hhhhhhhh",
     "hhhhhhhh",
     "hssssssh",
-    "ssssssss",     # フードの下はおでこ（前髪はフードの中）
+    "sbbssbbs",     # 茶色いまゆ毛（前髪はフードの中）
     "swksskws",
     "swksskws",
     "ssssssss",
