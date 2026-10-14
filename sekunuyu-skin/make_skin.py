@@ -29,6 +29,10 @@ PAL = {
     "o": "#3C3C46", "O": "#E6E6EA",                      # くつ・くつ底
     "y": "#FFD23F", "Y": "#E08A1E", "L": "#FFF0A0",      # 黄色（ヘッドセット・たんぽぽ）・影・光
     "B": "#34364A",                                      # ヘッドセットのバンドとマイク
+    "D": "#28183F", "K": "#120A1A",                      # パーカーのフード（黒むらさき）・ふち
+    "P": "#43296A", "p": "#573A86",                      # パーカーのむらさき・明るいむらさき
+    "Z": "#CFCBDA", "z": "#8C8799",                      # ファスナーの歯（明るいグレー・グレー）
+    "e": "#C64CFF", "E": "#F2C6FF",                      # エンダーの目（むらさき・光）
 }
 
 # 各パーツのスキン画像上の位置（左上）と大きさ（幅, 高さ, 奥行き）。Minecraft の決まりどおり
@@ -148,6 +152,84 @@ ARM = {   # 右腕（半そで）
     "left": ["uuuu", "uuuu", "uuuu", "UUUU"] + ["SSSS"] * 8,     # 体側（かげ）
 }
 
+# ---------------------------------------------------------------- エンダーパーカー（フードをかぶった服）
+# フードは帽子レイヤーに描く：前にエンダーの目、顔のまわりはファスナー。ヘッドセットはフードの上から付ける
+
+HAT_HOOD = {
+    "top": ["DDDDDDDD", "DPDDDPDD", "DDDPDDDD", "zzzzzzzz", "zzzzzzzz", "DDPDDDPD", "DDDDDDDD", "KKKKKKKK"],
+    "bottom": ["........"] * 8,
+    "front": [
+        "DDDDDDDD",
+        "eEeKKeEe",
+        "ZKZKZKZK",
+        "K......Z",
+        "Z......K",
+        "K......Z",
+        "Z......K",
+        "K......Z",
+    ],
+    "right": [
+        "DDDzzDDD",
+        "DPDzzDPD",
+        "DDDzzDDD",
+        "DDLyyYDD",
+        "DPyyyYDD",
+        "DDyyyYPD",
+        "DDYYYYDD",
+        "KKKKKKKK",
+    ],
+    "left": [
+        "DDDzzDDD",
+        "DPDzzDPD",
+        "DDDzzDDD",
+        "DDLyyYDD",
+        "DDyyyYPD",
+        "DPyyyYDD",
+        "DDYYYYDD",
+        "KKKKKKKK",
+    ],
+    "back": ["DDDDDDDD", "DPDDDDPD", "DDDDPDDD", "DDPDDDDD", "DDDDDDPD", "DPDDDDDD", "DDDDPDDD", "KKKKKKKK"],
+}
+
+BODY_HOOD = {
+    "top": ["PPPPPPPP"] * 4,
+    "bottom": ["KKKKKKKK"] * 4,
+    "front": [
+        "KPZssZPK",
+        "KPPZzPPK",
+        "KPPzZPPK",
+        "KPPZZPPK",
+        "KPPZZPPK",
+        "KPPPPPPK",
+        "KPPPPPPK",
+        "KppppppK",
+        "KpPPPPpK",
+        "KppppppK",
+        "KKKKKKKK",
+        "KKKKKKKK",
+    ],
+    "back": ["KDDDDDDK", "KPDDDDPK"] + ["KPPPPPPK"] * 8 + ["KKKKKKKK", "KKKKKKKK"],
+    "right": ["PPPP"] * 10 + ["KKKK", "KKKK"],
+}
+BODY_HOOD["left"] = BODY_HOOD["right"]
+
+ARM_HOOD = {   # 右腕（長そで）
+    "top": ["PPPP"] * 4,
+    "bottom": ["SSSS"] * 4,
+    "front": ["KPPP"] * 9 + ["KKKK", "ssss", "SSSS"],
+    "back": ["PPPK"] * 9 + ["KKKK", "ssss", "SSSS"],
+    "right": ["PPPP"] * 9 + ["KKKK", "ssss", "SSSS"],
+    "left": ["DDDD"] * 9 + ["KKKK", "SSSS", "SSSS"],     # 体側（かげ）
+}
+
+# 服の組み合わせ。どれを使うかは OUTFIT で選ぶ
+OUTFITS = {
+    "ender_hoodie": {"head": HEAD, "hat": HAT_HOOD, "body": BODY_HOOD, "arm": ARM_HOOD},   # エンダーパーカー
+    "tee": {"head": HEAD, "hat": HAT, "body": BODY, "arm": ARM},                                # 白T（最初の服）
+}
+OUTFIT = "ender_hoodie"
+
+
 def gingham(h: int) -> list[str]:
     """黄色のギンガムチェック（2ドットごと）。"""
     return ["".join("y" if (y // 2) % 2 == 0 and (x // 2) % 2 == 0 else
@@ -179,6 +261,15 @@ PANTS = {
         "back": ["Aaaa"] * 4 + ["cccc", "ssss", "yyyy", "TTTT", "yyyy", "TTTT", "oooo", "OOOO"],
         "right": ["aaAa"] * 4 + ["cccc", "ssss", "yyyy", "TTTT", "yyyy", "TTTT", "oooo", "OOOO"],
         "left": ["AAAA"] * 4 + ["CCCC", "SSSS", "YYYY", "uuuu", "YYYY", "uuuu", "oooo", "OOOO"],
+    },
+    # パーカーとおそろいのむらさき＋黒いくつ
+    "ender": {
+        "top": ["PPPP"] * 4,
+        "bottom": ["KKKK"] * 4,
+        "front": ["PPPK"] * 10 + ["KKKK", "kkkk"],
+        "back": ["KPPP"] * 10 + ["KKKK", "kkkk"],
+        "right": ["PPPP"] * 10 + ["KKKK", "kkkk"],
+        "left": ["DDDD"] * 10 + ["KKKK", "kkkk"],
     },
     # 最初の濃いジーンズ＋スニーカー
     "jeans": {
@@ -224,8 +315,14 @@ def legs(style: str) -> tuple[dict, dict]:
     return right, left
 
 
-LEG_R, LEG_L = legs(PANTS_STYLE)
-DESIGN = {"head": HEAD, "hat": HAT, "body": BODY, "arm": ARM, "arm_l": mirror(ARM), "leg": LEG_R, "leg_l": LEG_L}
+def design(outfit: str, pants: str) -> dict:
+    o = OUTFITS[outfit]
+    leg_r, leg_l = legs(pants)
+    return {"head": o["head"], "hat": o["hat"], "body": o["body"], "arm": o["arm"], "arm_l": mirror(o["arm"]),
+            "leg": leg_r, "leg_l": leg_l}
+
+
+DESIGN = design(OUTFIT, PANTS_STYLE)
 
 
 def rgba(ch: str) -> tuple:
